@@ -122,6 +122,17 @@
     <MaxPermGen>512m</MaxPermGen>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>ZBJ</id>
+      <url>http://nexus.axiomalaska.com/nexus/content/repositories/public</url>
+    </repository>
+    <repository>
+      <id>clojars</id>
+      <url>http://clojars.org/repo/</url>
+    </repository>
+  </repositories>
+
   <dependencyManagement>
     <dependencies>
       <!-- Logging -->

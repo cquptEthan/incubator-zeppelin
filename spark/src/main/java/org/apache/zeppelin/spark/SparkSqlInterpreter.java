@@ -19,10 +19,15 @@ package org.apache.zeppelin.spark;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -110,6 +115,11 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+
+    String currentUser =   context.getAuthenticationInfo().getUser();
+
+//    ParseDriver.HiveLexerX
+
     SQLContext sqlc = null;
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
 
@@ -117,7 +127,9 @@ public class SparkSqlInterpreter extends Interpreter {
       return new InterpreterResult(Code.ERROR, "Spark "
           + sparkInterpreter.getSparkVersion().toString() + " is not supported");
     }
-
+    if (st.contains("drop")){
+      return new InterpreterResult(Code.ERROR, "permission denie ");
+    }
     sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
@@ -194,6 +206,53 @@ public class SparkSqlInterpreter extends Interpreter {
       } else {
         return null;
       }
+    }
+  }
+
+  /**
+   * 检查表权限
+   * @param tree
+   * @return
+   */
+  private boolean checkSQL(ASTNode tree) {
+    String auth = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    ArrayList children = tree.getChildren();
+    if(children != null) {
+      Iterator i$ = tree.getChildren().iterator();
+
+      while(i$.hasNext()) {
+        Node node = (Node)i$.next();
+        if(node instanceof ASTNode) {
+          String checkStr = node.toString();
+          if("TOK_INSERT".equals(checkStr) || "TOK_DROPTABLE".equals(checkStr) || "TOK_TRUNCATETABLE".equals(checkStr)){
+            return false;
+          }
+          checkSQL((ASTNode) node);
+        }
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 检查涉及的表权限。
+   * @param tree
+   */
+  private void checkTable(ASTNode tree) {
+    ArrayList children = tree.getChildren();
+    if(children != null) {
+      Iterator i$ = tree.getChildren().iterator();
+
+      while(i$.hasNext()) {
+        Node node = (Node)i$.next();
+        if(node instanceof ASTNode) {
+          checkTable((ASTNode) node);
+        } else {
+        }
+      }
+    }else{
+      if(tree.parent.toString().equals("TOK_TABNAME"))
+        System.out.println(tree);
     }
   }
 
