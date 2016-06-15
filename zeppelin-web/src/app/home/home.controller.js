@@ -28,19 +28,8 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
 
   $scope.isReloading = false;
 
-  var getZeppelinVersion = function() {
-    $http.get(baseUrlSrv.getRestApiBase() +'/version').
-      success(function (data, status, headers, config) {
-        $scope.zeppelinVersion = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
-  };
-  
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
-    getZeppelinVersion();
   };
 
   initHome();
@@ -74,10 +63,6 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
 
   $scope.toggleFolderNode = function(node) {
     node.hidden = !node.hidden;
-  };
-
-  $rootScope.noteName = function(note) {
-    return arrayOrderingSrv.getNoteName(note);
   };
 
 });

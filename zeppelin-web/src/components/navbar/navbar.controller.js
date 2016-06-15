@@ -14,7 +14,45 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
+angular.module('zeppelinWebApp')
+.filter('notebookFilter', function() {
+  return function (notebooks, searchText)
+  {
+    if (!searchText) {
+      return notebooks;
+    }
+
+    var filteringNote = function(notebooks, filteredNotes) {
+      _.each(notebooks, function(notebook) {
+
+        if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+          filteredNotes.push(notebook);
+          return notebook;
+        }
+
+        if (notebook.children) { 
+          filteringNote(notebook.children, filteredNotes);
+        }
+      });
+    };
+
+    return _.filter(notebooks, function(notebook) {
+      if (notebook.children) {
+        var filteredNotes = [];
+        filteringNote(notebook.children, filteredNotes);
+
+        if (filteredNotes.length > 0) {
+          return filteredNotes;
+        }
+      }
+
+      if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+        return notebook;
+      }
+    });
+  };
+})
+.controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
     $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
@@ -46,15 +84,6 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     vm.connected = param;
   });
 
-  $rootScope.$on('$locationChangeSuccess', function () {
-    var path = $location.path();
-    // hacky solution to clear search bar
-    // TODO(felizbear): figure out how to make ng-click work in navbar
-    if (path === '/') {
-      $scope.searchTerm = '';
-    }
-  });
-
   $scope.checkUsername = function () {
     if ($rootScope.ticket) {
       if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
@@ -64,16 +93,19 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
         $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
       }
     }
+    if (_.isEmpty($rootScope.truncatedUsername)) {
+      $rootScope.truncatedUsername = 'Connected';
+    }
   };
 
   $scope.$on('loginSuccess', function(event, param) {
     $scope.checkUsername();
     loadNotes();
   });
-  
+
   $scope.logout = function() {
-    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout').
-      success(function(data, status, headers, config) {
+    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout')
+      .success(function(data, status, headers, config) {
         $rootScope.userName = '';
         $rootScope.ticket.principal = '';
         $rootScope.ticket.ticket = '';
@@ -81,15 +113,18 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
         BootstrapDialog.show({
            message: 'Logout Success'
         });
+        setTimeout(function() {
+          window.location = '#';
+          window.location.reload();
+        }, 1000);
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
-    
   };
 
-  $scope.search = function() {
-    $location.url(/search/ + $scope.searchTerm);
+  $scope.search = function(searchTerm) {
+    $location.url(/search/ + searchTerm);
   };
 
   function loadNotes() {
@@ -100,9 +135,27 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     return ($routeParams.noteId === noteId);
   }
 
+  $rootScope.noteName = function(note) {
+    if (!_.isEmpty(note)) {
+      return arrayOrderingSrv.getNoteName(note);
+    }
+  };
+
+  function getZeppelinVersion() {
+    console.log('version');
+    $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
+      function(data, status, headers, config) {
+        $rootScope.zeppelinVersion = data.body;
+      }).error(
+      function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  }
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
 
+  getZeppelinVersion();
   vm.loadNotes();
   $scope.checkUsername();
 

@@ -44,8 +44,8 @@ limitations under the License.
     <link rel="stylesheet" href="bower_components/highlightjs/styles/github.css" />
     <link rel="stylesheet" href="bower_components/ngtoast/dist/ngToast.css" />
     <link rel="stylesheet" href="bower_components/bootstrap3-dialog/dist/css/bootstrap-dialog.min.css" />
-    <link rel="stylesheet" href="bower_components/datatables.net-bs/css/dataTables.bootstrap.css" />
-    <link rel="stylesheet" href="bower_components/datatables.net-buttons-bs/css/buttons.bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/pikaday/css/pikaday.css" />
+    <link rel="stylesheet" href="bower_components/handsontable/dist/handsontable.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/all.css" />
     <!-- endbuild -->
@@ -55,6 +55,7 @@ limitations under the License.
     <link rel="stylesheet" href="app/notebook/notebook.css">
     <link rel="stylesheet" href="app/notebook/paragraph/paragraph.css">
     <link rel="stylesheet" href="app/interpreter/interpreter.css">
+    <link rel="stylesheet" href="app/credential/credential.css">
     <link rel="stylesheet" href="app/configuration/configuration.css">
     <link rel="stylesheet" href="fonts/font-awesome.min.css">
     <link rel="stylesheet" href="fonts/simple-line-icons.css">
@@ -132,16 +133,10 @@ limitations under the License.
     <script src="bower_components/ngtoast/dist/ngToast.js"></script>
     <script src="bower_components/ng-focus-if/focusIf.js"></script>
     <script src="bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js"></script>
-    <script src="bower_components/floatThead/dist/jquery.floatThead.js"></script>
-    <script src="bower_components/floatThead/dist/jquery.floatThead.min.js"></script>
-    <script src="bower_components/datatables.net/js/jquery.dataTables.js"></script>
-    <script src="bower_components/datatables.net-bs/js/dataTables.bootstrap.js"></script>
-    <script src="bower_components/datatables.net-buttons/js/dataTables.buttons.js"></script>
-    <script src="bower_components/datatables.net-buttons/js/buttons.colVis.js"></script>
-    <script src="bower_components/datatables.net-buttons/js/buttons.flash.js"></script>
-    <script src="bower_components/datatables.net-buttons/js/buttons.html5.js"></script>
-    <script src="bower_components/datatables.net-buttons/js/buttons.print.js"></script>
-    <script src="bower_components/datatables.net-buttons-bs/js/buttons.bootstrap.js"></script>
+    <script src="bower_components/zeroclipboard/dist/ZeroClipboard.js"></script>
+    <script src="bower_components/moment/moment.js"></script>
+    <script src="bower_components/pikaday/pikaday.js"></script>
+    <script src="bower_components/handsontable/dist/handsontable.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js({.tmp,src}) scripts/scripts.js -->
@@ -150,6 +145,7 @@ limitations under the License.
     <script src="app/home/home.controller.js"></script>
     <script src="app/notebook/notebook.controller.js"></script>
     <script src="app/interpreter/interpreter.controller.js"></script>
+    <script src="app/credential/credential.controller.js"></script>
     <script src="app/configuration/configuration.controller.js"></script>
     <script src="app/notebook/paragraph/paragraph.controller.js"></script>
     <script src="app/search/result-list.controller.js"></script>
