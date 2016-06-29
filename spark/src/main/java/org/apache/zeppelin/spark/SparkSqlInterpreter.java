@@ -46,7 +46,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.util.HiveParse;
@@ -386,7 +385,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     return null;
   }
 }

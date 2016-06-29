@@ -16,7 +16,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
-  function($scope, $route, $routeParams, $location, $rootScope, $http, $window,
+  function($scope, $route, $routeParams, $location, $rootScope, $http,
     websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
@@ -612,7 +612,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       BootstrapDialog.confirm({
         closable: true,
         title: '',
-        message: 'Interpreter setting changes will be discarded.',
+        message: 'Changes will be discarded.',
         callback: function(result) {
           if (result) {
             $scope.$apply(function() {
@@ -651,7 +651,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       $scope.closeSetting();
     } else {
       $scope.openSetting();
-      $scope.closePermissions();
     }
   };
 
@@ -713,23 +712,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' + $scope.note.id + '/permissions',
       $scope.permissions, {withCredentials: true}).
       success(function (data, status, headers, config) {
-        getPermissions(function() {
-          console.log('Note permissions %o saved', $scope.permissions);
-          BootstrapDialog.alert({
-            closable: true,
-            title: 'Permissions Saved Successfully!!!',
-            message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' +
-            $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
-          });
-          $scope.showPermissions = false;
+        console.log('Note permissions %o saved', $scope.permissions);
+        BootstrapDialog.alert({
+          closable: true,
+          title: 'Permissions Saved Successfully!!!',
+          message: 'Owners : ' + $scope.permissions.owners + '\n\n' + 'Readers : ' + $scope.permissions.readers + '\n\n' + 'Writers  : ' + $scope.permissions.writers
         });
+        $scope.showPermissions = false;
       }).
       error(function (data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
         BootstrapDialog.show({
-          closable: false,
-          closeByBackdrop: false,
-          closeByKeyboard: false,
+          closable: true,
           title: 'Insufficient privileges',
           message: data.message,
           buttons: [
@@ -746,7 +740,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
               label: 'Cancel',
               action: function (dialog) {
                 dialog.close();
-                $window.location.replace('/');
               }
             }
           ]
@@ -759,7 +752,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       $scope.closePermissions();
     } else {
       $scope.openPermissions();
-      $scope.closeSetting();
     }
   };
 
@@ -824,16 +816,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   function convertToArray(role) {
-    if (!$scope.permissions) {
-      return;
-    } else if (role === 'owners' && typeof $scope.permissions.owners === 'string') {
+    if (role === 'owners') {
       searchText = $scope.permissions.owners.split(',');
-    } else if (role === 'readers' && typeof $scope.permissions.readers === 'string') {
+    }
+    else if (role === 'readers') {
       searchText = $scope.permissions.readers.split(',');
-    } else if (role === 'writers' && typeof $scope.permissions.writers === 'string') {
+    }
+    else if (role === 'writers') {
       searchText = $scope.permissions.writers.split(',');
     }
-
     for (var i = 0; i < searchText.length; i++) {
       searchText[i] = searchText[i].trim();
     }
@@ -886,35 +877,20 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     updatePreviousList();
   };
 
-  $scope.$watch('permissions.owners', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('owners');
-    });
-  }, 350));
-  $scope.$watch('permissions.readers', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('readers');
-    });
-  }, 350));
-  $scope.$watch('permissions.writers', _.debounce(function(readers) {
-    $scope.$apply(function() {
-      $scope.search('writers');
-    });
-  }, 350));
-
   // function to find suggestion list on change
   $scope.search = function(role) {
-    angular.element('.userlist').show();
     convertToArray(role);
     checkPreviousRole(role);
     getChangedIndex();
     $scope.selectIndex = -1;
     $scope.suggestions = [];
     selectedUser = searchText[selectedUserIndex];
-    if (selectedUser !== '') {
-      getSuggestions(selectedUser);
-    } else {
-      $scope.suggestions = [];
+    if(selectedUser !== ''){
+    getSuggestions(selectedUser);
+    }
+    else
+    {
+     $scope.suggestions = [];
     }
   };
 
@@ -974,8 +950,5 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.suggestions = [];
   };
 
-angular.element(document).click(function(){
-     angular.element('.userlist').hide();
-});
 
 });

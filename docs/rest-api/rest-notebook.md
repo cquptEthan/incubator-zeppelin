@@ -19,23 +19,20 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Apache Zeppelin Notebook REST API
+## Zeppelin REST API
+ Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
 
-<div id="toc"></div>
+ All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
-## Overview
-Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
-All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
-Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+ If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](../../community.html).
 
-If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
-
+<br />
 
 ## Notebook REST API List
 
   Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following tables.
 
-### List of the notebooks
+### List Notebooks
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -77,7 +74,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Create a new notebook
+
+### Create Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -131,7 +129,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Get an existing notebook information
+
+### Get Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -228,7 +227,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Delete a notebook
+
+### Delete Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -255,7 +255,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Clone a notebook
+
+### Clone Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -293,12 +294,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Run all paragraphs
+
+### Run Notebook Job
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method runs all paragraphs in the given notebook id.
+      <td>This ```POST``` method runs all paragraph in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -320,12 +322,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Stop all paragraphs
+
+### Stop Notebook Job
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stops all paragraphs in the given notebook id.
+      <td>This ```DELETE``` method stops all paragraph in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -347,12 +350,13 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Get the status of all paragraphs
+
+### Get Notebook Job
   <table class="table-configuration">
     <col width="200">
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method gets the status of all paragraphs by the given notebook id.
+      <td>This ```GET``` method gets all paragraph status by the given notebook id.
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -393,7 +397,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Run a paragraph
+
+### Run Paragraph Job
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -431,7 +436,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Stop a paragraph
+
+### Stop Paragraph Job
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -458,6 +464,7 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
+
 ### Add Cron Job
   <table class="table-configuration">
     <col width="200">
@@ -546,7 +553,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Full text search through the paragraphs in all notebooks
+
+### Full Text Search Through the Paragraphs in All Notebooks
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -584,7 +592,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Create a new paragraph
+
+### Create Paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -634,7 +643,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Get a paragraph information
+
+### Get Paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -702,7 +712,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br/>
-### Move a paragraph to the specific index
+
+### Move Paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -730,7 +741,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
 
 
 <br/>
-### Delete a paragraph
+
+### Delete Paragraph
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -757,7 +769,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Export a notebook
+
+### Export Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -807,7 +820,8 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
   </table>
 
 <br />
-### Import a notebook
+
+### Import Notebook
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -865,4 +879,3 @@ If you work with Apache Zeppelin and find a need for an additional REST API, ple
     </tr>
     </tr>
   </table>
-  

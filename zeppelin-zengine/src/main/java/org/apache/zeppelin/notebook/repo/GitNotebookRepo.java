@@ -19,23 +19,18 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +46,7 @@ import com.google.common.collect.Lists;
  *
  *   TODO(bzz): add default .gitignore
  */
-public class GitNotebookRepo extends VFSNotebookRepo {
+public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
@@ -70,86 +65,47 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   }
 
   @Override
-  public synchronized void save(Note note, AuthenticationInfo subject) throws IOException {
-    super.save(note, subject);
+  public synchronized void save(Note note) throws IOException {
+    super.save(note);
   }
 
   /* implemented as git add+commit
    * @param pattern is the noteId
-   * @param commitMessage is a commit message (checkpoint message)
+   * @param commitMessage is a commit message (checkpoint name)
    * (non-Javadoc)
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
-  public Revision checkpoint(String pattern, String commitMessage, AuthenticationInfo subject) {
-    Revision revision = null;
+  public void checkpoint(String pattern, String commitMessage) {
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
         LOG.debug("Changes found for pattern '{}': {}", pattern, gitDiff);
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
-        RevCommit commit = git.commit().setMessage(commitMessage).call();
-        revision = new Revision(commit.getName(), commit.getShortMessage(), commit.getCommitTime());
+        git.commit().setMessage(commitMessage).call();
       } else {
         LOG.debug("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
       LOG.error("Failed to add+comit {} to Git", pattern, e);
     }
-    return revision;
-  }
-
-  /**
-   * the idea is to:
-   * 1. stash current changes
-   * 2. remember head commit and checkout to the desired revision
-   * 3. get note and checkout back to the head
-   * 4. apply stash on top and remove it
-   */
-  @Override
-  public synchronized Note get(String noteId, Revision rev, AuthenticationInfo subject)
-      throws IOException {
-    Note note = null;
-    RevCommit stash = null;
-    try {
-      List<DiffEntry> gitDiff = git.diff().setPathFilter(PathFilter.create(noteId)).call();
-      boolean modified = !gitDiff.isEmpty();
-      if (modified) {
-        // stash changes
-        stash = git.stashCreate().call();
-        Collection<RevCommit> stashes = git.stashList().call();
-        LOG.debug("Created stash : {}, stash size : {}", stash, stashes.size());
-      }
-      ObjectId head = git.getRepository().resolve(Constants.HEAD);
-      // checkout to target revision
-      git.checkout().setStartPoint(rev.id).addPath(noteId).call();
-      // get the note
-      note = super.get(noteId, subject);
-      // checkout back to head
-      git.checkout().setStartPoint(head.getName()).addPath(noteId).call();
-      if (modified && stash != null) {
-        // unstash changes
-        ObjectId applied = git.stashApply().setStashRef(stash.getName()).call();
-        ObjectId dropped = git.stashDrop().setStashRef(0).call();
-        Collection<RevCommit> stashes = git.stashList().call();
-        LOG.debug("Stash applied as : {}, and dropped : {}, stash size: {}", applied, dropped,
-            stashes.size());
-      }
-    } catch (GitAPIException e) {
-      LOG.error("Failed to return note from revision \"{}\"", rev.message, e);
-    }
-    return note;
   }
 
   @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    List<Revision> history = Lists.newArrayList();
+  public Note get(String noteId, String rev) throws IOException {
+    //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
+    return super.get(noteId);
+  }
+
+  @Override
+  public List<Rev> history(String noteId) {
+    List<Rev> history = Lists.newArrayList();
     LOG.debug("Listing history for {}:", noteId);
     try {
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
-        history.add(new Revision(log.getName(), log.getShortMessage(), log.getCommitTime()));
+        history.add(new Rev(log.getName(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (NoHeadException e) {
@@ -174,5 +130,6 @@ public class GitNotebookRepo extends VFSNotebookRepo {
   void setGit(Git git) {
     this.git = git;
   }
+
 
 }

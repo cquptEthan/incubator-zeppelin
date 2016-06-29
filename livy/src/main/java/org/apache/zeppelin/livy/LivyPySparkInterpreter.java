@@ -18,7 +18,6 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -36,6 +35,16 @@ import java.util.Properties;
 public class LivyPySparkInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
+
+  static {
+    Interpreter.register(
+        "pyspark",
+        "livy",
+        LivyPySparkInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .build()
+    );
+  }
 
   protected Map<String, Integer> userSessionMap;
   protected LivyHelper livyHelper;
@@ -106,7 +115,7 @@ public class LivyPySparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     return null;
   }
 

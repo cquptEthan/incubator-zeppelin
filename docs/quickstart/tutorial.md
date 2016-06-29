@@ -17,17 +17,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-# Zeppelin Tutorial
-
-<div id="toc"></div>
+## Zeppelin Tutorial
 
 This tutorial walks you through some of the fundamental Zeppelin concepts. We will assume you have already installed Zeppelin. If not, please see [here](../install/install.html) first.
 
 Current main backend processing engine of Zeppelin is [Apache Spark](https://spark.apache.org). If you're new to this system, you might want to start by getting an idea of how it processes data to get the most out of Zeppelin.
 
+<br />
 ## Tutorial with Local File
 
-### Data Refine
+### 1. Data Refine
 
 Before you start Zeppelin tutorial, you will need to download [bank.zip](http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip). 
 
@@ -53,7 +52,7 @@ val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
 bank.toDF().registerTempTable("bank")
 ```
 
-### Data Retrieval
+### 2. Data Retrieval
 
 Suppose we want to see age distribution from `bank`. To do this, run:
 
@@ -76,7 +75,7 @@ Now we want to see age distribution with certain marital status and add combo bo
 <br />
 ## Tutorial with Streaming Data 
 
-### Data Refine
+### 1. Data Refine
 
 Since this tutorial is based on Twitter's sample tweet stream, you must configure authentication with a Twitter account. To do this, take a look at [Twitter Credential Setup](https://databricks-training.s3.amazonaws.com/realtime-processing-with-spark-streaming.html#twitter-credential-setup). After you get API keys, you should fill out credential related values(`apiKey`, `apiSecret`, `accessToken`, `accessTokenSecret`) with your API keys on following script.
 
@@ -136,7 +135,7 @@ twt.print
 ssc.start()
 ```
 
-### Data Retrieval
+### 2. Data Retrieval
 
 For each following script, every time you click run button you will see different result since it is based on real-time data.
 

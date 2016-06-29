@@ -24,7 +24,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -54,8 +53,8 @@ public class ScaldingInterpreter extends Interpreter {
   static final String MAX_OPEN_INSTANCES = "max.open.instances";
   static final String MAX_OPEN_INSTANCES_DEFAULT = "50";
 
-  public static final List NO_COMPLETION =
-    Collections.unmodifiableList(new ArrayList<>());
+  public static final List<String> NO_COMPLETION = 
+    Collections.unmodifiableList(new ArrayList<String>());
 
   static {
     Interpreter.register(
@@ -282,7 +281,7 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     return NO_COMPLETION;
   }
 

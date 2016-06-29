@@ -6,9 +6,7 @@ group: manual
 ---
 {% include JB/setup %}
 
-# Cassandra CQL Interpreter for Apache Zeppelin
-
-<div id="toc"></div>
+## Cassandra CQL Interpreter for Apache Zeppelin
 
 <table class="table-configuration">
   <tr>

@@ -18,8 +18,6 @@ angular
   .module('zeppelinWebApp')
   .controller('SearchResultCtrl', function($scope, $routeParams, searchService) {
 
-  $scope.isResult = true ;
-  $scope.searchTerm = $routeParams.searchTerm;
   var results = searchService.search({'q': $routeParams.searchTerm}).query();
 
   results.$promise.then(function(result) {
@@ -35,17 +33,6 @@ angular
         $routeParams.searchTerm;
 
       return note;
-    });
-    if ($scope.notes.length === 0) {
-      $scope.isResult = false;
-    } else {
-      $scope.isResult = true;
-    }
-
-  $scope.$on('$routeChangeStart', function (event, next, current) {
-      if (next.originalPath !== '/search/:searchTerm') {
-        searchService.searchTerm = '';
-      }
     });
   });
 

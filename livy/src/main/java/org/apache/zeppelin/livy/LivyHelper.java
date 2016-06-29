@@ -20,24 +20,31 @@ package org.apache.zeppelin.livy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang3.StringUtils;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.kerberos.client.KerberosRestTemplate;
-import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 
 /***
@@ -57,23 +64,23 @@ public class LivyHelper {
   public Integer createSession(InterpreterContext context, String kind) throws Exception {
     try {
       Map<String, String> conf = new HashMap<String, String>();
-
+      
       Iterator<Entry<Object, Object>> it = property.entrySet().iterator();
       while (it.hasNext()) {
         Entry<Object, Object> pair = it.next();
-        if (pair.getKey().toString().startsWith("livy.spark.") &&
+        if (pair.getKey().toString().startsWith("livy.spark.") && 
             !pair.getValue().toString().isEmpty())
           conf.put(pair.getKey().toString().substring(5), pair.getValue().toString());
       }
 
       String confData = gson.toJson(conf);
-      String user = context.getAuthenticationInfo().getUser();
 
-      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions", "POST",
+      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
+          "POST", 
           "{" +
               "\"kind\": \"" + kind + "\", " +
-              "\"conf\": " + confData + ", " +
-              "\"proxyUser\": " + (StringUtils.isEmpty(user) ? null : "\"" + user + "\"") +
+              "\"conf\": " + confData + ", " + 
+              "\"proxyUser\": " + context.getAuthenticationInfo().getUser() + 
               "}",
           context.getParagraphId()
       );
@@ -89,8 +96,9 @@ public class LivyHelper {
           LOGGER.error(String.format("sessionId:%s state is %s",
               jsonMap.get("id"), jsonMap.get("state")));
           Thread.sleep(1000);
-          json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" +
-              sessionId, "GET", null, context.getParagraphId());
+          json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/" + sessionId,
+              "GET", null,
+              context.getParagraphId());
           jsonMap = (Map<Object, Object>) gson.fromJson(json,
               new TypeToken<Map<Object, Object>>() {
               }.getType());
@@ -327,54 +335,66 @@ public class LivyHelper {
     }
   }
 
-  private RestTemplate getRestTemplate() {
-    String keytabLocation = property.getProperty("zeppelin.livy.keytab");
-    String principal = property.getProperty("zeppelin.livy.principal");
-    if (StringUtils.isNotEmpty(keytabLocation) && StringUtils.isNotEmpty(principal)) {
-      return new KerberosRestTemplate(keytabLocation, principal);
-    }
-    return new RestTemplate();
-  }
-
   protected String executeHTTP(String targetURL, String method, String jsonData, String paragraphId)
       throws Exception {
-    RestTemplate restTemplate = getRestTemplate();
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Content-Type", "application/json");
-    ResponseEntity<String> response = null;
+    HttpClient client = HttpClientBuilder.create().build();
+    HttpResponse response = null;
     if (method.equals("POST")) {
-      HttpEntity<String> entity = new HttpEntity<String>(jsonData, headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.POST, entity, String.class);
-      paragraphHttpMap.put(paragraphId, response);
+      HttpPost request = new HttpPost(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      StringEntity se = new StringEntity(jsonData);
+      request.setEntity(se);
+      response = client.execute(request);
+      paragraphHttpMap.put(paragraphId, request);
     } else if (method.equals("GET")) {
-      HttpEntity<String> entity = new HttpEntity<String>(headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.GET, entity, String.class);
-      paragraphHttpMap.put(paragraphId, response);
+      HttpGet request = new HttpGet(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      response = client.execute(request);
+      paragraphHttpMap.put(paragraphId, request);
     } else if (method.equals("DELETE")) {
-      HttpEntity<String> entity = new HttpEntity<String>(headers);
-      response = restTemplate.exchange(targetURL, HttpMethod.DELETE, entity, String.class);
+      HttpDelete request = new HttpDelete(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      response = client.execute(request);
     }
+
     if (response == null) {
       return null;
     }
 
-    if (response.getStatusCode().value() == 200
-            || response.getStatusCode().value() == 201
-            || response.getStatusCode().value() == 404) {
-      return response.getBody();
+    if (response.getStatusLine().getStatusCode() == 200
+        || response.getStatusLine().getStatusCode() == 201
+        || response.getStatusLine().getStatusCode() == 404) {
+      return getResponse(response);
     } else {
-      String responseString = response.getBody();
+      String responseString = getResponse(response);
       if (responseString.contains("CreateInteractiveRequest[\\\"master\\\"]")) {
         return responseString;
       }
       LOGGER.error(String.format("Error with %s StatusCode: %s",
-              response.getStatusCode().value(), responseString));
+          response.getStatusLine().getStatusCode(), responseString));
       throw new Exception(String.format("Error with %s StatusCode: %s",
-              response.getStatusCode().value(), responseString));
+          response.getStatusLine().getStatusCode(), responseString));
     }
   }
 
+  private String getResponse(HttpResponse response) throws Exception {
+    BufferedReader rd = new BufferedReader(
+        new InputStreamReader(response.getEntity().getContent()));
+
+    StringBuffer result = new StringBuffer();
+    String line = "";
+    while ((line = rd.readLine()) != null) {
+      result.append(line);
+    }
+    return result.toString();
+  }
+
   public void cancelHTTP(String paragraphId) {
+    if (paragraphHttpMap.get(paragraphId).getClass().getName().contains("HttpPost")) {
+      ((HttpPost) paragraphHttpMap.get(paragraphId)).abort();
+    } else {
+      ((HttpGet) paragraphHttpMap.get(paragraphId)).abort();
+    }
     paragraphHttpMap.put(paragraphId, null);
   }
 

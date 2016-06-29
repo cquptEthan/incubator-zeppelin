@@ -18,7 +18,6 @@
 package org.apache.zeppelin.rinterpreter;
 
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 import java.net.URL;
@@ -83,9 +82,8 @@ public class RRepl extends Interpreter implements WrappedInterpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
-    List completion = intp.completion(s, i);
-    return completion;
+  public List<String> completion(String s, int i) {
+    return intp.completion(s, i);
   }
 
   @Override

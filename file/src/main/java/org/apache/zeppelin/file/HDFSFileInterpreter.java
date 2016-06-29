@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 
 /**
  * HDFS implementation of File interpreter for Zeppelin.
@@ -260,9 +259,9 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     logger.info("Completion request at position\t" + cursor + " in string " + buf);
-    final List suggestions = new ArrayList<>();
+    final List<String> suggestions = new ArrayList<>();
     if (StringUtils.isEmpty(buf)) {
       suggestions.add("ls");
       suggestions.add("cd");

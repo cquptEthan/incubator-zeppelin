@@ -29,7 +29,6 @@ import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.rest.ZeppelinhubRestApiHandler;
 import org.apache.zeppelin.notebook.repo.zeppelinhub.websocket.Client;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -142,7 +141,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
+  public List<NoteInfo> list() throws IOException {
     String response = restApiClient.asyncGet("");
     List<NoteInfo> notes = GSON.fromJson(response, new TypeToken<List<NoteInfo>>() {}.getType());
     if (notes == null) {
@@ -153,7 +152,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
+  public Note get(String noteId) throws IOException {
     if (StringUtils.isBlank(noteId)) {
       return EMPTY_NOTE;
     }
@@ -168,7 +167,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public void save(Note note, AuthenticationInfo subject) throws IOException {
+  public void save(Note note) throws IOException {
     if (note == null) {
       throw new IOException("Zeppelinhub failed to save empty note");
     }
@@ -178,7 +177,7 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+  public void remove(String noteId) throws IOException {
     restApiClient.asyncDel(noteId);
     LOG.info("ZeppelinHub REST API removing note {} ", noteId);
   }
@@ -189,22 +188,8 @@ public class ZeppelinHubRepo implements NotebookRepo {
   }
 
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
+    
   }
 
 }

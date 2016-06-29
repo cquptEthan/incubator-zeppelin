@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, $window, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -61,9 +61,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
-          closable: false,
-          closeByBackdrop: false,
-          closeByKeyboard: false,
+          closable: true,
           title: 'Insufficient privileges', 
           message: data.info.toString(),
           buttons: [{
@@ -76,9 +74,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
               }
           }, {
               label: 'Cancel',
-              action: function(dialog) {
-                  dialog.close();
-                  $window.location.replace('/');
+              action: function(dialog){
+                 dialog.close();
               }
           }]
       });

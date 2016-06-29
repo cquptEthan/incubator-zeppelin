@@ -33,7 +33,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -121,7 +120,7 @@ public class PostgreSqlInterpreter extends Interpreter {
         }
       };
 
-  private static final List NO_COMPLETION = new ArrayList<>();
+  private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
   public PostgreSqlInterpreter(Properties property) {
     super(property);
@@ -322,12 +321,11 @@ public class PostgreSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
 
     List<CharSequence> candidates = new ArrayList<CharSequence>();
     if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
-      List completion = Lists.transform(candidates, sequenceToStringTransformer);
-      return completion;
+      return Lists.transform(candidates, sequenceToStringTransformer);
     } else {
       return NO_COMPLETION;
     }

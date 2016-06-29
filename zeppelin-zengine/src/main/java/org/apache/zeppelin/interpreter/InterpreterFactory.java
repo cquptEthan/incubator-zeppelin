@@ -350,17 +350,15 @@ public class InterpreterFactory implements InterpreterGroupFactory {
     List<Dependency> deps = intSetting.getDependencies();
     if (deps != null) {
       for (Dependency d: deps) {
-        File destDir = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO));
-
         if (d.getExclusions() != null) {
           depResolver.load(
               d.getGroupArtifactVersion(),
               d.getExclusions(),
-              new File(destDir, intSetting.id()));
+              conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO) + "/" + intSetting.id());
         } else {
           depResolver.load(
               d.getGroupArtifactVersion(),
-              new File(destDir, intSetting.id()));
+              conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO) + "/" + intSetting.id());
         }
       }
     }

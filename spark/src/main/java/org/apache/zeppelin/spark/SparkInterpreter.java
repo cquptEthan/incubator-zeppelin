@@ -19,7 +19,10 @@ package org.apache.zeppelin.spark;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
@@ -27,8 +30,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -50,7 +51,6 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
@@ -63,10 +63,7 @@ import scala.Enumeration.Value;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
-import scala.collection.convert.WrapAsJava;
 import scala.collection.Seq;
-import scala.collection.convert.WrapAsJava$;
-import scala.collection.convert.WrapAsScala;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.reflect.io.AbstractFile;
@@ -176,10 +173,6 @@ public class SparkInterpreter extends Interpreter {
     return java.lang.Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
 
-  private boolean importImplicit() {
-    return java.lang.Boolean.parseBoolean(getProperty("zeppelin.spark.importImplicit"));
-  }
-
   public SQLContext getSQLContext() {
     synchronized (sharedInterpreterLock) {
       if (sqlc == null) {
@@ -254,7 +247,7 @@ public class SparkInterpreter extends Interpreter {
           | IllegalArgumentException | InvocationTargetException e) {
         // continue instead of: throw new InterpreterException(e);
         // Newer Spark versions (like the patched CDH5.7.0 one) don't contain this method
-        logger.warn(String.format("Spark method classServerUri not available due to: [%s]",
+        logger.warn(String.format("Spark method classServerUri not available due to: [%s]", 
           e.getMessage()));
       }
     }
@@ -544,14 +537,12 @@ public class SparkInterpreter extends Interpreter {
               + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
       intp.interpret("import org.apache.spark.SparkContext._");
 
-      if (importImplicit()) {
-        if (sparkVersion.oldSqlContextImplicits()) {
-          intp.interpret("import sqlContext._");
-        } else {
-          intp.interpret("import sqlContext.implicits._");
-          intp.interpret("import sqlContext.sql");
-          intp.interpret("import org.apache.spark.sql.functions._");
-        }
+      if (sparkVersion.oldSqlContextImplicits()) {
+        intp.interpret("import sqlContext._");
+      } else {
+        intp.interpret("import sqlContext.implicits._");
+        intp.interpret("import sqlContext.sql");
+        intp.interpret("import org.apache.spark.sql.functions._");
       }
     }
 
@@ -651,7 +642,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     if (buf.length() < cursor) {
       cursor = buf.length();
     }
@@ -662,15 +653,7 @@ public class SparkInterpreter extends Interpreter {
     }
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(completionText, cursor);
-
-    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
-    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
-
-    for (String candidate : candidates) {
-      completions.add(new InterpreterCompletion(candidate, candidate));
-    }
-
-    return completions;
+    return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
   }
 
   private String getCompletionTargetString(String text, int cursor) {

@@ -28,7 +28,6 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -176,8 +175,8 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
-    return new ArrayList<>();
+  public List<String> completion(String buf, int cursor) {
+    return new ArrayList<String>();
   }
 
   private SparkInterpreter getSparkInterpreter() {

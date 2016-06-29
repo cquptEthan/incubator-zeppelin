@@ -19,17 +19,15 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Back-end Angular API in Apache Zeppelin
 
-<div id="toc"></div>
-
-## Overview
+## Back-end Angular API in Zeppelin
 
 Angular display system treats output as a view template for [AngularJS](https://angularjs.org/).
-It compiles templates and displays them inside of Apache Zeppelin. Zeppelin provides a gateway between your interpreter and your compiled **AngularJS view** templates.
+It compiles templates and displays them inside of Zeppelin.
+
+Zeppelin provides a gateway between your interpreter and your compiled **AngularJS view** templates.
 Therefore, you can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process.
 
-## Basic Usage 
 ### Print AngularJS view
 
 To use angular display system, you should start with `%angular`.
@@ -96,25 +94,30 @@ When the button is clicked, you'll see both `run` and `numWatched` are increment
 ## Let's make it Simpler and more Intuitive
 In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin.
 
+### How can we use it?
 Here are some usages.
 
-### Import
+#### Import
+
+#####  - In notebook scope
 ```scala
-// In notebook scope
 import org.apache.zeppelin.display.angular.notebookscope._
 import AngularElem._
+```
 
-// In paragraph scope
+#####  - In paragraph scope
+```scala
 import org.apache.zeppelin.display.angular.paragraphscope._
 import AngularElem._
 ```
 
-### Display Element
+
+#### Display Element
 ```scala
 // automatically convert to string and print with %angular display system directive in front.
 <div><div>.display
 ```
-### Event Handler
+#### Event Handler
 ```scala
 // on click
 <div></div>.onClick(() => {
@@ -132,7 +135,7 @@ import AngularElem._
 }).display
 ```
 
-### Bind Model
+#### Bind Model
 ```scala
 // bind model
 <div></div>.model("myModel").display
@@ -141,7 +144,7 @@ import AngularElem._
 <div></div>.model("myModel", initialValue).display
 ```
 
-### Interact with Model
+#### Interact with Model
 ```scala
 // read model
 AngularModel("myModel")()

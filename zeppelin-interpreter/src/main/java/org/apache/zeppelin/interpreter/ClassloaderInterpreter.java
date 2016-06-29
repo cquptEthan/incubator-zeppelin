@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 
 /**
@@ -152,12 +151,11 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      List completion = intp.completion(buf, cursor);
-      return completion;
+      return intp.completion(buf, cursor);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {

@@ -19,7 +19,6 @@ package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.user.Credentials;
 import org.apache.zeppelin.user.UserCredentials;
@@ -52,7 +51,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
   private transient AuthenticationInfo authenticationInfo;
-  private transient String effectiveText;
 
   String title;
   String text;
@@ -108,14 +106,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
-  public void setEffectiveText(String effectiveText) {
-    this.effectiveText = effectiveText;
-  }
-
-  public String getEffectiveText() {
-    return effectiveText;
-  }
-
   public AuthenticationInfo getAuthenticationInfo() {
     return authenticationInfo;
   }
@@ -147,7 +137,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public String getRequiredReplName() {
-    return getRequiredReplName(null != effectiveText ? effectiveText : text);
+    return getRequiredReplName(text);
   }
 
   public static String getRequiredReplName(String text) {
@@ -175,8 +165,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-  public String getScriptBody() {
-    return getScriptBody(null != effectiveText ? effectiveText : text);
+  private String getScriptBody() {
+    return getScriptBody(text);
   }
 
   public static String getScriptBody(String text) {
@@ -206,9 +196,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return getRepl(getRequiredReplName());
   }
 
-  public List<InterpreterCompletion> completion(String buffer, int cursor) {
+  public List<String> completion(String buffer, int cursor) {
     String replName = getRequiredReplName(buffer);
-    if (replName != null && cursor > replName.length()) {
+    if (replName != null) {
       cursor -= replName.length() + 1;
     }
     String body = getScriptBody(buffer);
@@ -217,8 +207,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    List completion = repl.completion(body, cursor);
-    return completion;
+    return repl.completion(body, cursor);
   }
 
   public void setNoteReplLoader(NoteInterpreterLoader repls) {
@@ -306,7 +295,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
     } finally {
       InterpreterContext.remove();
-      effectiveText = null;
     }
   }
 

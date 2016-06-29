@@ -19,22 +19,19 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-# Apache Zeppelin Interpreter REST API
+## Zeppelin REST API
+ Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
 
-<div id="toc"></div>
+ All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
 
-## Overview
-Apache Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
-All REST APIs are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`. 
-Note that Apache Zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
+ If you work with Zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.apache.org/community.html).
 
-If you work with Apache Zeppelin and find a need for an additional REST API, please [file an issue or send us an email](http://zeppelin.apache.org/community.html).
-
+ <br />
 ## Interpreter REST API List
 
-The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
+  The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
 
-### List of registered interpreters
+### List of Registered Interpreters
 
   <table class="table-configuration">
     <col width="200">
@@ -105,8 +102,8 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
-### List of registered interpreter settings
 
+### List of Interpreter Settings
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -180,7 +177,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
-### Create a new interpreter setting  
+### Create an Interpreter Setting  
 
   <table class="table-configuration">
     <col width="200">
@@ -259,8 +256,10 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
+
 <br/>
-### Update an interpreter setting
+
+### Update an Interpreter Setting
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -338,8 +337,9 @@ The role of registered interpreters, settings and interpreters group are describ
     </tr>
   </table>
 
+
 <br/>
-### Delete an interpreter setting
+### Delete an Interpreter Setting
 
   <table class="table-configuration">
     <col width="200">
@@ -369,7 +369,7 @@ The role of registered interpreters, settings and interpreters group are describ
 
 
 <br/>
-### Restart an interpreter
+### Restart an Interpreter
 
   <table class="table-configuration">
     <col width="200">
@@ -398,7 +398,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
-### Add a new repository for dependency resolving
+### Add repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
@@ -439,7 +439,7 @@ The role of registered interpreters, settings and interpreters group are describ
   </table>
 
 <br/>
-### Delete a repository for dependency resolving
+### Delete repository for dependency resolving
 
   <table class="table-configuration">
     <col width="200">
@@ -460,4 +460,3 @@ The role of registered interpreters, settings and interpreters group are describ
       <td> 500 </td>
     </tr>
   </table>
-  

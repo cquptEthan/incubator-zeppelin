@@ -15,9 +15,45 @@
 'use strict';
 
 angular.module('zeppelinWebApp')
-.controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
-    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv, searchService) {
+.filter('notebookFilter', function() {
+  return function (notebooks, searchText)
+  {
+    if (!searchText) {
+      return notebooks;
+    }
 
+    var filteringNote = function(notebooks, filteredNotes) {
+      _.each(notebooks, function(notebook) {
+
+        if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+          filteredNotes.push(notebook);
+          return notebook;
+        }
+
+        if (notebook.children) { 
+          filteringNote(notebook.children, filteredNotes);
+        }
+      });
+    };
+
+    return _.filter(notebooks, function(notebook) {
+      if (notebook.children) {
+        var filteredNotes = [];
+        filteringNote(notebook.children, filteredNotes);
+
+        if (filteredNotes.length > 0) {
+          return filteredNotes;
+        }
+      }
+
+      if (notebook.name.toLowerCase().indexOf(searchText) !== -1) {
+        return notebook;
+      }
+    });
+  };
+})
+.controller('NavCtrl', function($scope, $rootScope, $http, $routeParams,
+    $location, notebookListDataFactory, baseUrlSrv, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   $scope.showLoginWindow = function() {
@@ -31,7 +67,12 @@ angular.module('zeppelinWebApp')
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
-  $scope.searchForm = searchService;
+  if ($rootScope.ticket) {
+    $rootScope.fullUsername = $rootScope.ticket.principal;
+    $rootScope.truncatedUsername = $rootScope.ticket.principal;
+  }
+
+  var MAX_USERNAME_LENGTH=16;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -43,36 +84,43 @@ angular.module('zeppelinWebApp')
     vm.connected = param;
   });
 
+  $scope.checkUsername = function () {
+    if ($rootScope.ticket) {
+      if ($rootScope.ticket.principal.length <= MAX_USERNAME_LENGTH) {
+        $rootScope.truncatedUsername = $rootScope.ticket.principal;
+      }
+      else {
+        $rootScope.truncatedUsername = $rootScope.ticket.principal.substr(0, MAX_USERNAME_LENGTH) + '..';
+      }
+    }
+    if (_.isEmpty($rootScope.truncatedUsername)) {
+      $rootScope.truncatedUsername = 'Connected';
+    }
+  };
+
   $scope.$on('loginSuccess', function(event, param) {
+    $scope.checkUsername();
     loadNotes();
   });
 
   $scope.logout = function() {
-    var logoutURL = baseUrlSrv.getRestApiBase() + '/login/logout';
-    var request = new XMLHttpRequest();
-
-    //force authcBasic (if configured) to logout by setting credentials as false:false
-    request.open('post', logoutURL, true, 'false', 'false');
-    request.onreadystatechange = function() {
-      if (request.readyState === 4) {
-        if (request.status === 401 || request.status === 405 || request.status === 500) {
-          $rootScope.userName = '';
-          $rootScope.ticket.principal = '';
-          $rootScope.ticket.ticket = '';
-          $rootScope.ticket.roles = '';
-          BootstrapDialog.show({
-            message: 'Logout Success'
-          });
-          setTimeout(function() {
-            window.location.replace('/');
-          }, 1000);
-        } else {
-          request.open('post', logoutURL, true, 'false', 'false');
-          request.send();
-        }
-      }
-    };
-    request.send();
+    $http.post(baseUrlSrv.getRestApiBase()+'/login/logout')
+      .success(function(data, status, headers, config) {
+        $rootScope.userName = '';
+        $rootScope.ticket.principal = '';
+        $rootScope.ticket.ticket = '';
+        $rootScope.ticket.roles = '';
+        BootstrapDialog.show({
+           message: 'Logout Success'
+        });
+        setTimeout(function() {
+          window.location = '#';
+          window.location.reload();
+        }, 1000);
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
   };
 
   $scope.search = function(searchTerm) {
@@ -94,6 +142,7 @@ angular.module('zeppelinWebApp')
   };
 
   function getZeppelinVersion() {
+    console.log('version');
     $http.get(baseUrlSrv.getRestApiBase() + '/version').success(
       function(data, status, headers, config) {
         $rootScope.zeppelinVersion = data.body;
@@ -108,5 +157,6 @@ angular.module('zeppelinWebApp')
 
   getZeppelinVersion();
   vm.loadNotes();
+  $scope.checkUsername();
 
 });

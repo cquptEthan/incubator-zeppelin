@@ -37,7 +37,6 @@ import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -245,8 +244,8 @@ public class ElasticsearchInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String s, int i) {
-    final List suggestions = new ArrayList<>();
+  public List<String> completion(String s, int i) {
+    final List<String> suggestions = new ArrayList<>();
 
     if (StringUtils.isEmpty(s)) {
       suggestions.addAll(COMMANDS);

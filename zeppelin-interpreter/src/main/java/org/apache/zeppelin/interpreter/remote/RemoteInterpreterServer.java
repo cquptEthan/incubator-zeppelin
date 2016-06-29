@@ -32,7 +32,10 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.*;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -412,12 +415,10 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String noteId,
-      String className, String buf, int cursor)
+  public List<String> completion(String noteId, String className, String buf, int cursor)
       throws TException {
     Interpreter intp = getInterpreter(noteId, className);
-    List completion = intp.completion(buf, cursor);
-    return completion;
+    return intp.completion(buf, cursor);
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {

@@ -18,7 +18,6 @@
 package org.apache.zeppelin.livy;
 
 import org.apache.zeppelin.interpreter.*;
-import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -35,6 +34,20 @@ import java.util.Properties;
 public class LivySparkSQLInterpreter extends Interpreter {
 
   Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
+  static String DEFAULT_MAX_RESULT = "1000";
+
+  static {
+    Interpreter.register(
+        "sql",
+        "livy",
+        LivySparkSQLInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("zeppelin.livy.spark.maxResult",
+                DEFAULT_MAX_RESULT,
+                "Max number of SparkSQL result to display.")
+            .build()
+    );
+  }
 
   protected Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
@@ -80,7 +93,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
               line.replaceAll("\"", "\\\\\"")
                   .replaceAll("\\n", " ")
               + "\").show(" +
-              property.get("livy.spark.sql.maxResult") + ")",
+              property.get("zeppelin.livy.spark.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
@@ -145,7 +158,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
   }
 
   @Override
-  public List<InterpreterCompletion> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor) {
     return null;
   }
 

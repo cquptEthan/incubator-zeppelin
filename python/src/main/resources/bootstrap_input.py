@@ -13,27 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from py4j.java_gateway import JavaGateway
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-
 
 client = GatewayClient(port=%PORT%)
 gateway = JavaGateway(client)
 java_import(gateway.jvm, "org.apache.zeppelin.display.Input")
 
 
-class Py4jZeppelinContext(PyZeppelinContext):
-    """A context impl that uses Py4j to communicate to JVM
-    """
+class PyZeppelinContext():
+    paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
+    javaList = gateway.jvm.java.util.ArrayList
     def __init__(self, zc):
-        super(Py4jZeppelinContext, self).__init__(zc)
-        self.paramOption = gateway.jvm.org.apache.zeppelin.display.Input.ParamOption
-        self.javaList = gateway.jvm.java.util.ArrayList
-        self.max_result = 1000 #TODO(bzz): read `zeppelin.python.maxResult` from JVM
-    
+        self.z = zc
     def input(self, name, defaultValue=""):
         return self.z.getGui().input(name, defaultValue)
-    
     def select(self, name, options, defaultValue=""):
         javaOptions = gateway.new_array(self.paramOption, len(options))
         i = 0
@@ -41,7 +36,6 @@ class Py4jZeppelinContext(PyZeppelinContext):
             javaOptions[i] = self.paramOption(tuple[0], tuple[1])
             i += 1
         return self.z.getGui().select(name, defaultValue, javaOptions)
-    
     def checkbox(self, name, options, defaultChecked=[]):
         javaOptions = gateway.new_array(self.paramOption, len(options))
         i = 0
@@ -54,4 +48,4 @@ class Py4jZeppelinContext(PyZeppelinContext):
         return self.z.getGui().checkbox(name, javaDefaultCheck, javaOptions)
 
 
-z = Py4jZeppelinContext(gateway.entry_point)
+z = PyZeppelinContext(gateway.entry_point)

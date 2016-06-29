@@ -31,7 +31,6 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.user.AuthenticationInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,37 +114,37 @@ public class NotebookRepoSync implements NotebookRepo {
    *  Lists Notebooks from the first repository
    */
   @Override
-  public List<NoteInfo> list(AuthenticationInfo subject) throws IOException {
-    return getRepo(0).list(subject);
+  public List<NoteInfo> list() throws IOException {
+    return getRepo(0).list();
   }
 
   /* list from specific repo (for tests) */
-  List<NoteInfo> list(int repoIndex, AuthenticationInfo subject) throws IOException {
-    return getRepo(repoIndex).list(subject);
+  List<NoteInfo> list(int repoIndex) throws IOException {
+    return getRepo(repoIndex).list();
   }
 
   /**
    *  Returns from Notebook from the first repository
    */
   @Override
-  public Note get(String noteId, AuthenticationInfo subject) throws IOException {
-    return getRepo(0).get(noteId, subject);
+  public Note get(String noteId) throws IOException {
+    return getRepo(0).get(noteId);
   }
 
   /* get note from specific repo (for tests) */
-  Note get(int repoIndex, String noteId, AuthenticationInfo subject) throws IOException {
-    return getRepo(repoIndex).get(noteId, subject);
+  Note get(int repoIndex, String noteId) throws IOException {
+    return getRepo(repoIndex).get(noteId);
   }
 
   /**
    *  Saves to all repositories
    */
   @Override
-  public void save(Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(0).save(note, subject);
+  public void save(Note note) throws IOException {
+    getRepo(0).save(note);
     if (getRepoCount() > 1) {
       try {
-        getRepo(1).save(note, subject);
+        getRepo(1).save(note);
       }
       catch (IOException e) {
         LOG.info(e.getMessage() + ": Failed to write to secondary storage");
@@ -154,14 +153,14 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /* save note to specific repo (for tests) */
-  void save(int repoIndex, Note note, AuthenticationInfo subject) throws IOException {
-    getRepo(repoIndex).save(note, subject);
+  void save(int repoIndex, Note note) throws IOException {
+    getRepo(repoIndex).save(note);
   }
 
   @Override
-  public void remove(String noteId, AuthenticationInfo subject) throws IOException {
+  public void remove(String noteId) throws IOException {
     for (NotebookRepo repo : repos) {
-      repo.remove(noteId, subject);
+      repo.remove(noteId);
     }
     /* TODO(khalid): handle case when removing from secondary storage fails */
   }
@@ -175,8 +174,8 @@ public class NotebookRepoSync implements NotebookRepo {
     LOG.info("Sync started");
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
-    List <NoteInfo> srcNotes = srcRepo.list(null);
-    List <NoteInfo> dstNotes = dstRepo.list(null);
+    List <NoteInfo> srcNotes = srcRepo.list();
+    List <NoteInfo> dstNotes = dstRepo.list();
 
     Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
@@ -211,7 +210,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private void pushNotes(List<String> ids, NotebookRepo localRepo,
       NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
-      remoteRepo.save(localRepo.get(id, null), null);
+      remoteRepo.save(localRepo.get(id));
     }
   }
 
@@ -243,8 +242,8 @@ public class NotebookRepoSync implements NotebookRepo {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
         /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId(), null));
-        ddate = lastModificationDate(destRepo.get(dnote.getId(), null));
+        sdate = lastModificationDate(sourceRepo.get(snote.getId()));
+        ddate = lastModificationDate(destRepo.get(dnote.getId()));
         if (sdate.after(ddate)) {
           /* source contains more up to date note - push */
           pushIDs.add(snote.getId());
@@ -355,17 +354,13 @@ public class NotebookRepoSync implements NotebookRepo {
 
   //checkpoint to all available storages
   @Override
-  public Revision checkpoint(String noteId, String checkpointMsg, AuthenticationInfo subject)
-      throws IOException {
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
     int repoCount = getRepoCount();
-    int repoBound = Math.min(repoCount, getMaxRepoNum());
     int errorCount = 0;
     String errorMessage = "";
-    List<Revision> allRepoCheckpoints = new ArrayList<Revision>();
-    Revision rev = null;
-    for (int i = 0; i < repoBound; i++) {
+    for (int i = 0; i < Math.min(repoCount, getMaxRepoNum()); i++) {
       try {
-        allRepoCheckpoints.add(getRepo(i).checkpoint(noteId, checkpointMsg, subject));
+        getRepo(i).checkpoint(noteId, checkPointName);
       } catch (IOException e) {
         LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}", 
           getRepo(i).getClass().toString(), i, noteId);
@@ -375,28 +370,9 @@ public class NotebookRepoSync implements NotebookRepo {
       }
     }
     // throw exception if failed to commit for all initialized repos
-    if (errorCount == repoBound) {
+    if (errorCount == Math.min(repoCount, getMaxRepoNum())) {
       throw new IOException(errorMessage);
     }
-    if (allRepoCheckpoints.size() > 0) {
-      rev = allRepoCheckpoints.get(0);
-      // if failed to checkpoint on first storage, then return result on second
-      if (allRepoCheckpoints.size() > 1 && rev == null) {
-        rev = allRepoCheckpoints.get(1);
-      }
-    }
-    return rev;
-  }
 
-  @Override
-  public Note get(String noteId, Revision rev, AuthenticationInfo subject) throws IOException {
-    // Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<Revision> revisionHistory(String noteId, AuthenticationInfo subject) {
-    // Auto-generated method stub
-    return null;
   }
 }
