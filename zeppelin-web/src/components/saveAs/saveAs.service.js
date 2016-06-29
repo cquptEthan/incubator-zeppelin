@@ -44,5 +44,4 @@ angular.module('zeppelinWebApp').service('SaveAsService', function(browserDetect
       saveAsElement.remove();
     }
   };
-
 });
