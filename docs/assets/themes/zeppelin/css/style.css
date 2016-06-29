@@ -136,6 +136,23 @@ body {
   background: #3071a9;
 }
 
+.scrollable-menu {
+  max-height: 500px;
+  overflow: auto;
+}
+
+.index-header {
+  font-size: 16px;
+  font-style: italic;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+
+.index-description {
+  line-height: 1.6;
+  padding: 10px;
+}
+
 @media (max-width: 768px) {
   .navbar-collapse.in {
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.4);
@@ -416,6 +433,8 @@ a.anchor {
   word-break: keep-all;
   -webkit-overflow-scrolling: touch;
   font-size: 90%;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
 .content table th {
   font-weight: bold;
@@ -526,6 +545,20 @@ a.anchor {
 
 a.anchorjs-link:hover { text-decoration: none; }
 
+/* Table of Contents(TOC) */
+#toc {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+#toc ul {
+  margin-left: -14px;
+}
+
+#toc ul ul {
+  margin-left: -18px;
+}
+
 /* Custom, iPhone Retina */
 @media only screen and (max-width: 480px) {
   .jumbotron h1 {
@@ -561,6 +594,11 @@ and (max-width: 1024px) {
   font-size: 13px;
 }
 
+#menu .title {
+  padding-bottom: 8px;
+  color: #3071a9;
+}
+
 #menu .caret {
   border-top-color: white;
   border-bottom-color: white;
@@ -584,4 +622,16 @@ and (max-width: 1024px) {
 #docs .dropdown-menu li span {
   padding: 3px 10px 10px 10px;
   font-size: 13px;
+}
+
+@media only screen and (max-width: 480px) {
+  #menu .title {
+    color: #bbb;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  #menu .title {
+    color: #bbb;
+  }
 }
