@@ -58,12 +58,6 @@ limitations under the License.
       <li ng-click="exportToDSV('\t')"><a>TSV</a></li>
     </ul>
   </span>
-   <span>
-    <button type="button" class="btn btn-default btn-sm" style="margin-left:10px"
-            tooltip="Download Data as CSV" tooltip-placement="bottom"
-            ng-click="exportToCSV()"><i class="fa fa-download"></i>
-    </button>
-  </span>
   <span ng-if="getGraphMode()!='table'"
         style="margin-left:5px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
     <a class="btnText" ng-click="toggleGraphOption()">
