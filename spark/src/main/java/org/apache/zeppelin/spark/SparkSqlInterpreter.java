@@ -175,9 +175,15 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
-    if(this.getProperty().getProperty("zeppelin.sql.export") != null
+    if (this.getProperty().getProperty("zeppelin.sql.export") != null
       && this.getProperty().getProperty("zeppelin.sql.export").equals("true")){
-      String export = ZeppelinContext.showDF(sc, context, rdd,maxExport);
+      String export = ZeppelinContext.showDF(sc, context, rdd, maxExport);
+    }
+
+    try {
+      context.out.write(String.valueOf(msg.split("\n").length - 1));
+    } catch (IOException e) {
+      e.printStackTrace();
     }
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
