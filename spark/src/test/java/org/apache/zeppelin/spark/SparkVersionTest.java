@@ -101,7 +101,9 @@ public class SparkVersionTest {
             "left join ods_mk_task_opis c on a.task_id = c.task_id\n" +
             "left join ods_mk_task_extends d on a.task_id = d.task_id\n" +
             "where createymd between '2016-05-01' and '2016-05-31'").dump());
-    System.out.println(parseDriver.parse("drop table s").getChildren());
+    System.out.println(parseDriver.parse("select 4 as id from dua\n" +
+      " union all\n" +
+      "select 3 as id from dua").getChildren());
     System.out.println(parseDriver.parse("from tem_seo_info t\n" +
             "insert overwrite table tem_seo_all select 'all_seo' as content ,count(distinct t.uniqid),'${dtStr}'   where t.qdid='1'\n" +
             "insert overwrite table tem_seo_baidu select 'all_baidu' as content ,count(distinct t.uniqid),'${dtStr}'   where t.qdlyid='2'\n" +
@@ -194,10 +196,7 @@ public class SparkVersionTest {
 
 //        testSql.add("select task_id,s from ods_mk_task");
 
-      testSql.add("select *\n" +
-        "from ods_mk_works a \n" +
-        "join ods_mb_account b on b.user_id=a.user_id\n" +
-        "where task_id=7358857");
+      testSql.add("select user_id from ods_ul_level_user union all select from ods_mb_sellerlimitsV2_user");
       HiveConf hiveConf = new HiveConf();
 
       //Hive 解析

@@ -67,6 +67,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private int maxResult;
+  private int maxExport;
 
   public SparkSqlInterpreter(Properties property) {
     super(property);
@@ -75,6 +76,7 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    this.maxExport = Integer.parseInt(getProperty("zeppelin.spark.maxExport"));
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -173,6 +175,10 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
+    if(this.getProperty().getProperty("zeppelin.sql.export") != null
+      && this.getProperty().getProperty("zeppelin.sql.export").equals("true")){
+      String export = ZeppelinContext.showDF(sc, context, rdd,maxExport);
+    }
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }

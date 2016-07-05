@@ -295,8 +295,6 @@ public class Note implements Serializable, JobListener {
         }
       }
     }
-
-
     return null;
   }
 
@@ -483,6 +481,33 @@ public class Note implements Serializable, JobListener {
     }
 
     return true;
+  }
+  /**
+   * Run a single paragraph and block for the results
+   *
+   * @param paragraphId
+   */
+  public void runSynchronously(String paragraphId) {
+    Paragraph p = getParagraph(paragraphId);
+    p.setNoteReplLoader(replLoader);
+    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    p.getConfig().put("OVERRIDE_MAX_RESULTS", "200000");
+    String requiredReplName = p.getRequiredReplName();
+    Interpreter intp = replLoader.get(requiredReplName);
+    if (intp == null) {
+      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
+      if (conf.getUseJdbcAlias() && null != (intp = replLoader.get("jdbc"))) {
+        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
+        logger.debug("New paragraph: {}", pText);
+        p.setEffectiveText(pText);
+      } else {
+        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
+      }
+    }
+    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
+      intp.getScheduler().submit(p);
+    }
+    p.getConfig().remove("OVERRIDE_MAX_RESULTS");
   }
 
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {

@@ -2124,9 +2124,9 @@ angular.module('zeppelinWebApp')
   }
 
   $scope.goToSingleParagraph = function () {
-    var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
-    $window.open(redirectToUrl);
+    //var noteId = $route.current.pathParams.noteId;
+    //var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
+    //$window.open(redirectToUrl);
   };
 
   $scope.showScrollDownIcon = function(){
@@ -2156,6 +2156,12 @@ angular.module('zeppelinWebApp')
     doc.animate({scrollTop: 0}, 500);
     $scope.keepScrollDown = false;
   };
+
+    $scope.goToCSVExportParagraph = function () {
+      var noteId = $route.current.pathParams.noteId;
+      var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportCSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.csv';
+      $window.open(redirectToUrl);
+    };
 
   $scope.exportToDSV = function (delimiter) {
     var data = $scope.paragraph.result;

@@ -309,6 +309,9 @@ public class ZeppelinServer extends Application {
     ConfigurationsRestApi settingsApi = new ConfigurationsRestApi(notebook);
     singletons.add(settingsApi);
 
+    ExporterRestApi exporterApi = new ExporterRestApi(notebook);
+    singletons.add(exporterApi);
+
     return singletons;
   }
 }

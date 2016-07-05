@@ -605,8 +605,8 @@ and (max-width: 1024px) {
 }
 
 #menu .open .caret {
-  border-top-color: #428bca;
-  border-bottom-color: #428bca;
+  border-top-color: #999;
+  border-bottom-color: #999;
 }
 
 #menu .navbar-brand {

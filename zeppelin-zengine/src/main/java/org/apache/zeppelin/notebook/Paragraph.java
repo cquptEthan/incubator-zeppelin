@@ -250,6 +250,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     logger().info("run paragraph {} using {} " + repl, getId(), replName);
+    if ( this.getConfig().get("OVERRIDE_MAX_RESULTS") != null ){
+      repl.getProperty().setProperty("zeppelin.sql.export", "true");
+    }
+
     if (repl == null) {
       logger().error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());
