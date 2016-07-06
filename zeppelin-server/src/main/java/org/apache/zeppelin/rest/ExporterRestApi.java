@@ -25,7 +25,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
   import javax.ws.rs.core.Response.Status;
-  import java.io.IOException;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -53,52 +55,62 @@ public class ExporterRestApi {
   @GET
   @Produces("text/tab-separated-values")
   @Path("job/runThenExportCSV/{notebookId}/paragraph/{paragraphId}-export.csv")
-  public Response runThenExportTSV(@PathParam("notebookId") String notebookId,
-                                   @PathParam("paragraphId") String paragraphId) throws
+  public Response runThenExportTSV(@PathParam("notebookId") final String notebookId,
+                                   @PathParam("paragraphId") final String paragraphId) throws
     IOException, IllegalArgumentException {
-    Configuration conf = HBaseConfiguration.create();
-    conf.set("hbase.zookeeper.quorum", "hd1001.hadoop.zbjwork.com");
-    TableName tableName = TableName.valueOf("zeppelin-sql-cache");
-    String path = "";
-    String msg = "";
+    StreamingOutput streamingOutput = new StreamingOutput() {
+      @Override
+      public void write(OutputStream outputStream) throws IOException, WebApplicationException {
+        Configuration conf = HBaseConfiguration.create();
+        conf.set("hbase.zookeeper.quorum", "hd1001.hadoop.zbjwork.com");
+        TableName tableName = TableName.valueOf("zeppelin-sql-cache");
+        String path = "";
+        try {
+          HTable hTable = new HTable(conf, tableName);
+          String rowKey = notebookId + paragraphId;
+          Get get = new Get(rowKey.getBytes());
+          Result rs = null;
+          try {
+            rs = hTable.get(get);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
 
-    try {
-      HTable hTable = new HTable(conf, tableName);
-      String rowKey = notebookId + paragraphId;
-      Get get = new Get(rowKey.getBytes());
-      Result rs = null;
-      try {
-        rs = hTable.get(get);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-
-      if (rs != null) {
-        List<Cell> cells = rs.listCells();
-        if (cells != null ){
-          for (Cell cell : cells) {
-            if (new String(CellUtil.cloneQualifier(cell)).equals("path")) {
-              path = new String(CellUtil.cloneValue(cell));
+          if (rs != null) {
+            List<Cell> cells = rs.listCells();
+            if (cells != null) {
+              for (Cell cell : cells) {
+                if (new String(CellUtil.cloneQualifier(cell)).equals("path")) {
+                  path = new String(CellUtil.cloneValue(cell));
+                }
+              }
             }
           }
+          hTable.close();
+
+          if (!path.equals("")) {
+            Configuration hdfsconf = new Configuration();
+            hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/hdfs-site.xml"));
+            hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/core-site.xml"));
+            hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/mapred-site.xml"));
+            FileSystem fileSystem = FileSystem.get(hdfsconf);
+            FSDataInputStream in = fileSystem.open(new org.apache.hadoop.fs.Path(path));
+
+            byte[] buf = new byte[8096 * 100];
+            int c = 0;
+            while ((c = in.read(buf)) > 0) {
+              outputStream.write(buf,0,c);
+              outputStream.flush();
+            }
+            outputStream.close();
+            in.close();
+            fileSystem.close();
+          }
+        } catch (IOException e) {
+          e.printStackTrace();
         }
       }
-      hTable.close();
-
-      if (!path.equals("")) {
-        Configuration hdfsconf = new Configuration();
-        hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/hdfs-site.xml"));
-        hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/core-site.xml"));
-        hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/mapred-site.xml"));
-        FileSystem fileSystem = FileSystem.get(hdfsconf);
-        FSDataInputStream in = fileSystem.open(new org.apache.hadoop.fs.Path(path));
-        msg = in.readUTF();
-        in.close();
-        fileSystem.close();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return Response.ok(TsvToCSV.toCSV(msg)).build();
+    };
+    return Response.ok(streamingOutput,"text/tab-separated-values").build();
   }
 }

@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -416,17 +416,41 @@ public class SparkSqlInterpreter extends Interpreter {
       Configuration hdfsconf = new Configuration();
       hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/hdfs-site.xml"));
       hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/core-site.xml"));
-      hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/mapred-site.xml"));
+      hdfsconf.addResource(
+        new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/mapred-site.xml"));
       FileSystem fileSystem = FileSystem.get(hdfsconf);
       FSDataOutputStream out = fileSystem.create(new Path(path));
-      out.writeUTF(msg);
-      out.flush();
+      InputStream inputStream = new ByteArrayInputStream(msg.getBytes("UTF-8"));
+
+      byte[] buffer = new byte[8096 * 100];
+      int c = 0;
+      while (( c = inputStream.read(buffer, 0, buffer.length)) != -1) {
+        out.write(buffer, 0, c);
+        out.flush();
+      }
       out.close();
       fileSystem.close();
-
     } catch (IOException e) {
       e.printStackTrace();
       logger.error(e.getMessage());
+    }
+  }
+
+  private void writeData(FSDataOutputStream out, byte[] buffer, int length) throws IOException {
+
+    int totalByteWritten = 0;
+    int remainToWrite = length;
+
+    while (remainToWrite > 0) {
+      int toWriteThisRound = remainToWrite > buffer.length ? buffer.length
+        : remainToWrite;
+      out.write(buffer, 0, toWriteThisRound);
+      totalByteWritten += toWriteThisRound;
+      remainToWrite -= toWriteThisRound;
+    }
+    if (totalByteWritten != length) {
+      throw new IOException("WriteData: failure in write. Attempt to write "
+        + length + " ; written=" + totalByteWritten);
     }
   }
 

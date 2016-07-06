@@ -96,6 +96,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   public void setRows(Integer rows) {
     this.rows = rows;
   }
+
   public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
     super(generateId(), listener);
     this.note = note;
@@ -209,6 +210,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
+    if (note == null ) {
+      System.out.println("note is null");
+    }
+    if (factory == null ) {
+      System.out.println("factory is null");
+    }
     return factory.getInterpreter(note.getId(), name);
   }
 
