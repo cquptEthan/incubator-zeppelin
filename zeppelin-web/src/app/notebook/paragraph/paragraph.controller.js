@@ -2242,6 +2242,8 @@ angular.module('zeppelinWebApp')
       extension = 'tsv';
     } else if (delimiter === ',') {
       extension = 'csv';
+    } else if (delimiter === ' ') {
+      extension = 'txt';
     }
     SaveAsService.SaveAs(dsv, 'data', extension);
   };

@@ -25,6 +25,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -175,15 +178,10 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
-    if (this.getProperty().getProperty("zeppelin.sql.export") != null
-      && this.getProperty().getProperty("zeppelin.sql.export").equals("true")){
+    int row = msg.split("\n").length;
+    if (row >=  maxResult) {
       String export = ZeppelinContext.showDF(sc, context, rdd, maxExport);
-    }
-
-    try {
-      context.out.write(String.valueOf(msg.split("\n").length - 1));
-    } catch (IOException e) {
-      e.printStackTrace();
+      exportBigResult(context.getNoteId() + context.getParagraphId(), export, currentUser);
     }
     sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
@@ -394,6 +392,42 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     return tableCheckMsg;
+  }
+
+  private void exportBigResult(String key , String msg, String user) {
+    Configuration conf = HBaseConfiguration.create();
+    conf.set("hbase.zookeeper.quorum", getProperty("hbase.zookeeper.quorum"));
+    TableName tableName = TableName.valueOf(getProperty("zeppelin.SQL.cache.tablename"));
+
+    try {
+      HTable hTable = new HTable(conf, tableName);
+      Long cur = System.currentTimeMillis();
+      String rowKey = key;
+      String path = "/zeppelin/" + UUID.randomUUID().toString();
+
+      Put put = new Put(rowKey.getBytes());
+      put.addImmutable("common".getBytes(), "path".getBytes(), path.getBytes());
+      put.addImmutable("common".getBytes(), "user".getBytes(), user.getBytes());
+      put.addImmutable("common".getBytes(), "time".getBytes(),
+        SDF.format(new Date(cur)).getBytes());
+      hTable.put(put);
+      hTable.close();
+
+      Configuration hdfsconf = new Configuration();
+      hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/hdfs-site.xml"));
+      hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/core-site.xml"));
+      hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/mapred-site.xml"));
+      FileSystem fileSystem = FileSystem.get(hdfsconf);
+      FSDataOutputStream out = fileSystem.create(new Path(path));
+      out.writeUTF(msg);
+      out.flush();
+      out.close();
+      fileSystem.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      logger.error(e.getMessage());
+    }
   }
 
 

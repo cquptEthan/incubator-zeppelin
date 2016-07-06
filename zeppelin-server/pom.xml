@@ -40,6 +40,7 @@
 
   <dependencyManagement>
     <dependencies>
+
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-library</artifactId>
@@ -61,10 +62,84 @@
   </dependencyManagement>
 
   <dependencies>
+
+
+      <dependency>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-core-asl</artifactId>
+            <version>1.8.8</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+          <version>1.8.8</version>
+      </dependency>
+
+      <dependency>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+          <version>3.6.6.Final</version>
+      </dependency>
+
+      <dependency>
+      <artifactId>zookeeper</artifactId>
+      <groupId>org.apache.zookeeper</groupId>
+      <version>3.4.6</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>io.netty</groupId>
+                  <artifactId>netty</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
+          <version>0.98.3-hadoop2</version>
+          <exclusions>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-core-asl</artifactId>
+              </exclusion>
+              <exclusion>
+                  <groupId>org.codehaus.jackson</groupId>
+                  <artifactId>jackson-mapper-asl</artifactId>
+              </exclusion>
+              <exclusion>
+                  <artifactId>zookeeper</artifactId>
+                  <groupId>org.apache.zookeeper</groupId>
+              </exclusion>
+              <exclusion>
+                  <groupId>io.netty</groupId>
+                  <artifactId>netty</artifactId>
+              </exclusion>
+          </exclusions>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+          <version>0.98.3-hadoop2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-protocol</artifactId>
+          <version>0.98.3-hadoop2</version>
+      </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jsch</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
 
     <dependency>
@@ -86,6 +161,10 @@
           <groupId>javax.ws.rs</groupId>
           <artifactId>javax.ws.rs-api</artifactId>
         </exclusion>
+          <exclusion>
+              <groupId>com.sun.xml.bind</groupId>
+              <artifactId>jaxb-impl</artifactId>
+          </exclusion>
       </exclusions>
     </dependency>
 
@@ -206,11 +285,11 @@
       <version>2.2.1</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-servlet</artifactId>
-      <version>1.13</version>
-    </dependency>
+    <!--<dependency>-->
+      <!--<groupId>com.sun.jersey</groupId>-->
+      <!--<artifactId>jersey-servlet</artifactId>-->
+      <!--<version>1.13</version>-->
+    <!--</dependency>-->
 
     <dependency>
       <groupId>javax.ws.rs</groupId>
@@ -241,6 +320,10 @@
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
+          <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty</artifactId>
+          </exclusion>
         <exclusion>
           <groupId>org.eclipse.jetty.websocket</groupId>
           <artifactId>websocket-client</artifactId>
