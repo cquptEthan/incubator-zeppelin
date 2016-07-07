@@ -466,11 +466,11 @@ angular.module('zeppelinWebApp')
           selectDefaultColsForGraphOption();
         }
         /** User changed the chart type? */
-        if (oldGraphMode !== newGraphMode) {
-          $scope.setGraphMode(newGraphMode, false, false);
-        } else {
-          $scope.setGraphMode(newGraphMode, false, true);
-        }
+        //if (oldGraphMode !== newGraphMode) {
+        $scope.setGraphMode(newGraphMode, false, false);
+        //} else {
+        //  $scope.setGraphMode(newGraphMode, false, true);
+        //}
       } else if (newType === 'HTML' && resultRefreshed) {
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
@@ -1491,7 +1491,8 @@ angular.module('zeppelinWebApp')
 
   $scope.isGraphMode = function(graphName) {
     var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
-    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName && !activeAppId) {
+    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
+    //if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName && !activeAppId) {
       return true;
     } else {
       return false;

@@ -92,14 +92,17 @@ public class ExporterRestApi {
             Configuration hdfsconf = new Configuration();
             hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/hdfs-site.xml"));
             hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/core-site.xml"));
-            hdfsconf.addResource(new org.apache.hadoop.fs.Path("/home/hadoop/conf/mapred-site.xml"));
+            hdfsconf.addResource(
+              new org.apache.hadoop.fs.Path("/home/hadoop/conf/mapred-site.xml"));
             FileSystem fileSystem = FileSystem.get(hdfsconf);
             FSDataInputStream in = fileSystem.open(new org.apache.hadoop.fs.Path(path));
-
+            outputStream.write((byte) 0xEF);
+            outputStream.write((byte) 0xBB);
+            outputStream.write((byte) 0xBF);
             byte[] buf = new byte[8096 * 100];
             int c = 0;
             while ((c = in.read(buf)) > 0) {
-              outputStream.write(buf,0,c);
+              outputStream.write(buf, 0, c);
               outputStream.flush();
             }
             outputStream.close();
@@ -111,6 +114,6 @@ public class ExporterRestApi {
         }
       }
     };
-    return Response.ok(streamingOutput,"text/tab-separated-values").build();
+    return Response.ok(streamingOutput, "text/tab-separated-values").build();
   }
 }

@@ -443,4 +443,9 @@ public class SparkVersionTest {
 //    private boolean findCol(String col,){
 //
 //    }
+  @Test
+  public void setUp() throws Exception {
+    String s = "2 2 2 2 2\t";
+    String ss = s.replaceAll("\t",",");
+  }
 }

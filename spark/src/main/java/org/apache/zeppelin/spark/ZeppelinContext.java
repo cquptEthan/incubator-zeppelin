@@ -268,7 +268,7 @@ public class ZeppelinContext {
 
     msg.append("\n TotalRows: " + rows.length);
     if (rows.length > maxResult) {
-      msg.append("\n <br/><font color=red>Results are limited by " + maxResult + ".</font>");
+      msg.append("<br/><font color=red>Results are limited by " + maxResult + ".</font>");
     }
     sc.clearJobGroup();
     return msg.toString();
