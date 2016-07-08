@@ -56,6 +56,66 @@ module.exports = function (grunt) {
       }
     },
 
+    htmlhint: {
+      options: {
+        'tagname-lowercase': true,
+        'attr-lowercase': true,
+        'space-tab-mixed-disabled': 'space',
+        'tag-pair': true,
+        'tag-self-close': true,
+        'attr-no-duplication': true
+      },
+      src: ['src/**/*.html']
+    },
+
+    'goog-webfont-dl': {
+      patuaOne: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Patua One',
+          fontstyles: '400',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Patua-One.css',
+          cssprefix: '',
+          subset: ''
+        }
+      },
+      sourceCodePro: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Source Code Pro',
+          fontstyles: '300, 400, 500',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Source-Code-Pro.css',
+          cssprefix: '',
+          subset: ''
+        }
+      },
+      roboto: {
+        options: {
+          ttf: true,
+          eot: true,
+          woff: true,
+          woff2: true,
+          svg: true,
+          fontname: 'Roboto',
+          fontstyles: '300, 400, 500',
+          fontdest: '<%= yeoman.app %>/fonts/',
+          cssdest: '<%= yeoman.app %>/fonts/Roboto.css',
+          cssprefix: '',
+          subset: ''
+        }
+      }
+    },
+
     // Watches files for changes and runs tasks based on the changed files
     watch: {
       bower: {
@@ -71,6 +131,12 @@ module.exports = function (grunt) {
         options: {
           livereload: '<%= connect.options.livereload %>'
         }
+      },
+      html: {
+        files: [
+          '<%= yeoman.app %>/**/*.html'
+        ],
+        tasks: ['newer:htmlhint']
       },
       jsTest: {
         files: ['test/spec/{,*/}*.js'],
@@ -440,8 +506,10 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'jshint:all',
+    'htmlhint',
     'clean:dist',
     'wiredep',
+    'goog-webfont-dl',
     'useminPrepare',
     'concurrent:dist',
     'postcss',

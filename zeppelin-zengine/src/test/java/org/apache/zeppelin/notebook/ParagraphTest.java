@@ -19,6 +19,8 @@ package org.apache.zeppelin.notebook;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +29,8 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectBuilder;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -41,10 +45,58 @@ public class ParagraphTest {
     text = "%table 1234567";
     assertEquals("1234567", Paragraph.getScriptBody(text));
   }
+
   @Test
   public void scriptBodyWithoutReplName() {
     String text = "12345678";
     assertEquals(text, Paragraph.getScriptBody(text));
+  }
+
+  @Test
+  public void replNameEndsWithWhitespace() {
+    String text = "%md\r\n###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\t###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\u000b###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\f###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md\n###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+
+    text = "%md ###Hello";
+    assertEquals("md", Paragraph.getRequiredReplName(text));
+  }
+
+  @Test
+  public void effectiveTextTest() {
+    InterpreterFactory interpreterFactory = mock(InterpreterFactory.class);
+    Interpreter interpreter = mock(Interpreter.class);
+    Note note = mock(Note.class);
+
+    Paragraph p = new Paragraph("paragraph", note, null, interpreterFactory);
+    p.setText("%h2 show databases");
+    p.setEffectiveText("%jdbc(h2) show databases");
+    assertEquals("Get right replName", "jdbc", p.getRequiredReplName());
+    assertEquals("Get right scriptBody", "(h2) show databases", p.getScriptBody());
+
+    when(interpreterFactory.getInterpreter(anyString(), eq("jdbc"))).thenReturn(interpreter);
+    when(interpreter.getFormType()).thenReturn(Interpreter.FormType.NATIVE);
+    when(note.getId()).thenReturn("noteId");
+
+    try {
+      p.jobRun();
+    } catch (Throwable throwable) {
+      // Do nothing
+    }
+
+    assertEquals("Erase effective Text", "h2", p.getRequiredReplName());
+    assertEquals("Erase effective Text", "show databases", p.getScriptBody());
   }
 
   @Test

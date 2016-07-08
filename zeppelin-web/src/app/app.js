@@ -62,13 +62,21 @@
                     templateUrl: 'app/notebook/notebook.html',
                     controller: 'NotebookCtrl'
                 })
+                .when('/jobmanager', {
+                    templateUrl: 'app/jobmanager/jobmanager.html',
+                    controller: 'JobmanagerCtrl'
+                })
                 .when('/interpreter', {
                     templateUrl: 'app/interpreter/interpreter.html',
                     controller: 'InterpreterCtrl'
                 })
+                .when('/credential', {
+                    templateUrl: 'app/credential/credential.html',
+                    controller: 'CredentialCtrl'
+                })
                 .when('/configuration', {
-                  templateUrl: 'app/configuration/configuration.html',
-                  controller: 'ConfigurationCtrl'
+                    templateUrl: 'app/configuration/configuration.html',
+                    controller: 'ConfigurationCtrl'
                 })
                 .when('/search/:searchTerm', {
                     templateUrl: 'app/search/result-list.html',

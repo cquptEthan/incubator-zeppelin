@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, $window, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -59,9 +59,15 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'LIST_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setNotebookJobs', data.notebookJobs);
+    } else if (op === 'LIST_UPDATE_NOTEBOOK_JOBS') {
+      $rootScope.$broadcast('setUpdateNotebookJobs', data.notebookRunningJobs);
     } else if (op === 'AUTH_INFO') {
       BootstrapDialog.show({
-          closable: true,
+          closable: false,
+          closeByBackdrop: false,
+          closeByKeyboard: false,
           title: 'Insufficient privileges', 
           message: data.info.toString(),
           buttons: [{
@@ -74,8 +80,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
               }
           }, {
               label: 'Cancel',
-              action: function(dialog){
-                 dialog.close();
+              action: function(dialog) {
+                  dialog.close();
+                  $window.location.replace('/');
               }
           }]
       });
@@ -93,6 +100,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('angularObjectUpdate', data);
     } else if (op === 'ANGULAR_OBJECT_REMOVE') {
       $rootScope.$broadcast('angularObjectRemove', data);
+    } else if (op === 'APP_APPEND_OUTPUT') {
+      $rootScope.$broadcast('appendAppOutput', data);
+    } else if (op === 'APP_UPDATE_OUTPUT') {
+      $rootScope.$broadcast('updateAppOutput', data);
+    } else if (op === 'APP_LOAD') {
+      $rootScope.$broadcast('appLoad', data);
+    } else if (op === 'APP_STATUS_CHANGE') {
+      $rootScope.$broadcast('appStatusChange', data);
     }
   });
 

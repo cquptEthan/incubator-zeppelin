@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -45,6 +46,7 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -83,6 +85,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("{noteId}/permissions")
+  @ZeppelinApi
   public Response getNotePermissions(@PathParam("noteId") String noteId) {
     Note note = notebook.getNote(noteId);
     HashMap<String, Set<String>> permissionsMap = new HashMap();
@@ -106,6 +109,7 @@ public class NotebookRestApi {
    */
   @PUT
   @Path("{noteId}/permissions")
+  @ZeppelinApi
   public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
       throws IOException {
     HashMap<String, HashSet> permMap = gson.fromJson(req,
@@ -155,7 +159,8 @@ public class NotebookRestApi {
             notebookAuthorization.getOwners(noteId),
             notebookAuthorization.getReaders(noteId),
             notebookAuthorization.getWriters(noteId));
-    note.persist();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse<>(Status.OK).build();
   }
@@ -166,6 +171,7 @@ public class NotebookRestApi {
    */
   @PUT
   @Path("interpreter/bind/{noteId}")
+  @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     notebook.bindInterpretersToNote(noteId, settingIdList);
@@ -177,6 +183,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("interpreter/bind/{noteId}")
+  @ZeppelinApi
   public Response bind(@PathParam("noteId") String noteId) {
     List<InterpreterSettingListForNoteBind> settingList
       = new LinkedList<InterpreterSettingListForNoteBind>();
@@ -217,13 +224,16 @@ public class NotebookRestApi {
 
   @GET
   @Path("/")
+  @ZeppelinApi
   public Response getNotebookList() throws IOException {
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(false, subject);
     return new JsonResponse<>(Status.OK, "", notesInfo ).build();
   }
 
   @GET
   @Path("{notebookId}")
+  @ZeppelinApi
   public Response getNotebook(@PathParam("notebookId") String notebookId) throws IOException {
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -242,6 +252,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("export/{id}")
+  @ZeppelinApi
   public Response exportNoteBook(@PathParam("id") String noteId) throws IOException {
     String exportJson = notebook.exportNote(noteId);
     return new JsonResponse(Status.OK, "", exportJson).build();
@@ -256,8 +267,10 @@ public class NotebookRestApi {
    */
   @POST
   @Path("import")
+  @ZeppelinApi
   public Response importNotebook(String req) throws IOException {
-    Note newNote = notebook.importNote(req, null);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note newNote = notebook.importNote(req, null, subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
   
@@ -269,11 +282,13 @@ public class NotebookRestApi {
    */
   @POST
   @Path("/")
+  @ZeppelinApi
   public Response createNote(String message) throws IOException {
     LOG.info("Create new notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
-    Note note = notebook.createNote();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note note = notebook.createNote(subject);
     List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
     if (initialParagraphs != null) {
       for (NewParagraphRequest paragraphRequest : initialParagraphs) {
@@ -287,10 +302,11 @@ public class NotebookRestApi {
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
     }
+
     note.setName(noteName);
-    note.persist();
+    note.persist(subject);
     notebookServer.broadcastNote(note);
-    notebookServer.broadcastNoteList();
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
   }
 
@@ -302,15 +318,18 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("{notebookId}")
+  @ZeppelinApi
   public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
     LOG.info("Delete notebook {} ", notebookId);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     if (!(notebookId.isEmpty())) {
       Note note = notebook.getNote(notebookId);
       if (note != null) {
-        notebook.removeNote(notebookId);
+        notebook.removeNote(notebookId, subject);
       }
     }
-    notebookServer.broadcastNoteList();
+
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.OK, "").build();
   }
   
@@ -322,15 +341,17 @@ public class NotebookRestApi {
    */
   @POST
   @Path("{notebookId}")
+  @ZeppelinApi
   public Response cloneNote(@PathParam("notebookId") String notebookId, String message) throws
       IOException, CloneNotSupportedException, IllegalArgumentException {
     LOG.info("clone notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     String newNoteName = request.getName();
-    Note newNote = notebook.cloneNote(notebookId, newNoteName);
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    Note newNote = notebook.cloneNote(notebookId, newNoteName, subject);
     notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList();
+    notebookServer.broadcastNoteList(subject);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
 
@@ -342,6 +363,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("{notebookId}/paragraph")
+  @ZeppelinApi
   public Response insertParagraph(@PathParam("notebookId") String notebookId, String message)
       throws IOException {
     LOG.info("insert paragraph {} {}", notebookId, message);
@@ -363,7 +385,8 @@ public class NotebookRestApi {
     p.setTitle(request.getTitle());
     p.setText(request.getText());
 
-    note.persist();
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    note.persist(subject);
     notebookServer.broadcastNote(note);
     return new JsonResponse(Status.CREATED, "", p.getId()).build();
   }
@@ -376,6 +399,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("{notebookId}/paragraph/{paragraphId}")
+  @ZeppelinApi
   public Response getParagraph(@PathParam("notebookId") String notebookId,
                                @PathParam("paragraphId") String paragraphId) throws IOException {
     LOG.info("get paragraph {} {}", notebookId, paragraphId);
@@ -401,6 +425,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("{notebookId}/paragraph/{paragraphId}/move/{newIndex}")
+  @ZeppelinApi
   public Response moveParagraph(@PathParam("notebookId") String notebookId,
                                 @PathParam("paragraphId") String paragraphId,
                                 @PathParam("newIndex") String newIndex) throws IOException {
@@ -419,7 +444,8 @@ public class NotebookRestApi {
     try {
       note.moveParagraph(paragraphId, Integer.parseInt(newIndex), true);
 
-      note.persist();
+      AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+      note.persist(subject);
       notebookServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
@@ -436,6 +462,7 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("{notebookId}/paragraph/{paragraphId}")
+  @ZeppelinApi
   public Response deleteParagraph(@PathParam("notebookId") String notebookId,
                                   @PathParam("paragraphId") String paragraphId) throws IOException {
     LOG.info("delete paragraph {} {}", notebookId, paragraphId);
@@ -450,8 +477,9 @@ public class NotebookRestApi {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
     note.removeParagraph(paragraphId);
-    note.persist();
+    note.persist(subject);
     notebookServer.broadcastNote(note);
 
     return new JsonResponse(Status.OK, "").build();
@@ -465,6 +493,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("job/{notebookId}")
+  @ZeppelinApi
   public Response runNoteJobs(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
     LOG.info("run notebook jobs {} ", notebookId);
@@ -485,6 +514,7 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("job/{notebookId}")
+  @ZeppelinApi
   public Response stopNoteJobs(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
     LOG.info("stop notebook jobs {} ", notebookId);
@@ -509,6 +539,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("job/{notebookId}")
+  @ZeppelinApi
   public Response getNoteJobStatus(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
     LOG.info("get notebook job status.");
@@ -531,6 +562,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("job/{notebookId}/{paragraphId}")
+  @ZeppelinApi
   public Response runParagraph(@PathParam("notebookId") String notebookId, 
                                @PathParam("paragraphId") String paragraphId,
                                String message) throws
@@ -554,7 +586,9 @@ public class NotebookRestApi {
       Map<String, Object> paramsForUpdating = request.getParams();
       if (paramsForUpdating != null) {
         paragraph.settings.getParams().putAll(paramsForUpdating);
-        note.persist();
+        AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+        note.setLastReplName(paragraph.getId());
+        note.persist(subject);
       }
     }
 
@@ -570,6 +604,7 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("job/{notebookId}/{paragraphId}")
+  @ZeppelinApi
   public Response stopParagraph(@PathParam("notebookId") String notebookId, 
                                 @PathParam("paragraphId") String paragraphId) throws
                                 IOException, IllegalArgumentException {
@@ -595,6 +630,7 @@ public class NotebookRestApi {
    */
   @POST
   @Path("cron/{notebookId}")
+  @ZeppelinApi
   public Response registerCronJob(@PathParam("notebookId") String notebookId, String message) throws
       IOException, IllegalArgumentException {
     LOG.info("Register cron job note={} request cron msg={}", notebookId, message);
@@ -627,6 +663,7 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("cron/{notebookId}")
+  @ZeppelinApi
   public Response removeCronJob(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
     LOG.info("Remove cron job note {}", notebookId);
@@ -652,6 +689,7 @@ public class NotebookRestApi {
    */
   @GET
   @Path("cron/{notebookId}")
+  @ZeppelinApi
   public Response getCronJob(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
     LOG.info("Get cron job note {}", notebookId);
@@ -662,13 +700,61 @@ public class NotebookRestApi {
     }
     
     return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
-  }  
+  }
+
+  /**
+   * Get notebook jobs for job manager
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("jobmanager/")
+  @ZeppelinApi
+  public Response getJobListforNotebook() throws IOException, IllegalArgumentException {
+    LOG.info("Get notebook jobs for job manager");
+
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    List<Map<String, Object>> notebookJobs = notebook.getJobListforNotebook(false, 0, subject);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    return new JsonResponse<>(Status.OK, response).build();
+  }
+
+  /**
+   * Get updated notebook jobs for job manager
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("jobmanager/{lastUpdateUnixtime}/")
+  @ZeppelinApi
+  public Response getUpdatedJobListforNotebook(
+      @PathParam("lastUpdateUnixtime") long lastUpdateUnixTime) throws
+      IOException, IllegalArgumentException {
+    LOG.info("Get updated notebook jobs lastUpdateTime {}", lastUpdateUnixTime);
+
+    List<Map<String, Object>> notebookJobs;
+    AuthenticationInfo subject = new AuthenticationInfo(SecurityUtils.getPrincipal());
+    notebookJobs = notebook.getJobListforNotebook(false, lastUpdateUnixTime, subject);
+    Map<String, Object> response = new HashMap<>();
+
+    response.put("lastResponseUnixTime", System.currentTimeMillis());
+    response.put("jobs", notebookJobs);
+
+    return new JsonResponse<>(Status.OK, response).build();
+  }
 
   /**
    * Search for a Notes with permissions
    */
   @GET
   @Path("search")
+  @ZeppelinApi
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notebooks for: {}", queryTerm);
     String principal = SecurityUtils.getPrincipal();

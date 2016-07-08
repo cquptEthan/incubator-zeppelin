@@ -34,6 +34,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -45,27 +46,6 @@ import org.slf4j.LoggerFactory;
 public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
   AtomicInteger num = new AtomicInteger(0);
-
-  static {
-    Interpreter.register(
-        "sql",
-        "spark",
-        SparkSqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.spark.maxResult",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_MAXRESULT",
-                    "zeppelin.spark.maxResult", "1000"),
-                "Max number of SparkSQL result to display.")
-            .add("zeppelin.spark.concurrentSQL",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_CONCURRENTSQL",
-                    "zeppelin.spark.concurrentSQL", "false"),
-                "Execute multiple SQL concurrently if set true.")
-            .add("zeppelin.spark.sql.stacktrace",
-                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_SQL_STACKTRACE",
-                    "zeppelin.spark.sql.stacktrace", "false"),
-                "Show full exception stacktrace for SQL queries if set to true.")
-            .build());
-  }
 
   private String getJobGroup(InterpreterContext context){
     return "zeppelin-" + context.getParagraphId();
@@ -198,7 +178,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     return null;
   }
 }

@@ -54,7 +54,7 @@ limitations under the License.
     <div ng-include src="'app/notebook/paragraph/paragraph-parameterizedQueryForm.html'"></div>
 
     <!-- Rendering -->
-    <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
+    <div class="tableDisplay" ng-show="!paragraph.config.tableHide">
       <div ng-include src="'app/notebook/paragraph/paragraph-chart-selector.html'"></div>
       <div ng-include src="'app/notebook/paragraph/paragraph-pivot.html'"></div>
       <div ng-include src="'app/notebook/paragraph/paragraph-results.html'"></div>
@@ -67,6 +67,12 @@ limitations under the License.
     <div ng-show="!paragraph.config.tableHide && !viewOnly"
          id="{{paragraph.id}}_executionTime"
          class="executionTime" ng-bind-html="getExecutionTime()">
+    </div>
+    <div ng-if = "paragraph.status === 'RUNNING'" class = "paragraphFooterElapsed">
+      <div
+           id="{{paragraph.id}}_elapsedTime"
+           class="elapsedTime" ng-bind-html="getElapsedTime()">
+      </div>
     </div>
   </div>
 </div>

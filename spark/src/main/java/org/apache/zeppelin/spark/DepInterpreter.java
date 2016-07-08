@@ -21,14 +21,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
@@ -39,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
+import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
 import scala.Console;
 import scala.None;
 import scala.Some;
+import scala.collection.convert.WrapAsJava$;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
@@ -62,23 +64,6 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  *
  */
 public class DepInterpreter extends Interpreter {
-
-  static {
-    Interpreter.register(
-        "dep",
-        "spark",
-        DepInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("zeppelin.dep.localrepo",
-                getSystemDefault("ZEPPELIN_DEP_LOCALREPO", null, "local-repo"),
-                "local repository for dependency loader")
-            .add("zeppelin.dep.additionalRemoteRepository",
-                "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
-                "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.")
-            .build());
-
-  }
-
   private SparkIMain intp;
   private ByteArrayOutputStream out;
   private SparkDependencyContext depc;
@@ -259,10 +244,18 @@ public class DepInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<InterpreterCompletion> completion(String buf, int cursor) {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
-    return scala.collection.JavaConversions.seqAsJavaList(ret.candidates());
+
+    List<String> candidates = WrapAsJava$.MODULE$.seqAsJavaList(ret.candidates());
+    List<InterpreterCompletion> completions = new LinkedList<InterpreterCompletion>();
+
+    for (String candidate : candidates) {
+      completions.add(new InterpreterCompletion(candidate, candidate));
+    }
+
+    return completions;
   }
 
   private List<File> currentClassPath() {
