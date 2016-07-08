@@ -39,11 +39,9 @@ limitations under the License.
       <h1 class="box-heading" id="welcome">
         欢迎使用云分析平台
       </h1>
+
       云分析平台是一个基于Zeppelin二次开发的在线交互式可视化数据分析工具<br>
       你可以使用SQL/R快速查询离线数据进行可视化分析<br>
-      关于Zeppelin参考<a style="text-decoration: none;" target="_blank"
-                     href="http://zeppelin.apache.org/docs/{{zeppelinVersion}}/index.html">官方文档</a><br>
-
       <div class="row">
         <div class="col-md-4" ng-if="ticket">
           <h4>Notebook
@@ -97,7 +95,7 @@ limitations under the License.
   <div ng-show="home.notebookHome" id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in home.note.paragraphs"
        ng-controller="ParagraphCtrl"
-       ng-Init="init(currentParagraph, home.note)"
+       ng-init="init(currentParagraph, home.note)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"
