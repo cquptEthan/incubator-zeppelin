@@ -38,12 +38,43 @@
     <jsoup.version>1.8.2</jsoup.version>
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
-    <spark.version>1.4.1</spark.version>
+    <spark.version>1.6.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
+      <hadoop-two.version>2.6.0</hadoop-two.version>
   </properties>
 
   <dependencies>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-client</artifactId>
+          <version>0.98.3-hadoop2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-common</artifactId>
+          <version>0.98.3-hadoop2</version>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-protocol</artifactId>
+          <version>0.98.3-hadoop2</version>
+      </dependency>
+      <!--<dependency>-->
+          <!--<groupId>org.apache.hbase</groupId>-->
+          <!--<artifactId>hbase-client</artifactId>-->
+          <!--<version>1.0.0</version>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+          <!--<groupId>org.apache.hbase</groupId>-->
+          <!--<artifactId>hbase-common</artifactId>-->
+          <!--<version>1.0.0</version>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+          <!--<groupId>org.apache.hbase</groupId>-->
+          <!--<artifactId>hbase-protocol</artifactId>-->
+          <!--<version>1.0.0</version>-->
+      <!--</dependency>-->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -293,6 +324,7 @@
       <scope>test</scope>
     </dependency>
 
+
   </dependencies>
 
   <build>
@@ -387,7 +419,7 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
+              <!--<includeScope>runtime</includeScope>-->
               <artifactItems>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>

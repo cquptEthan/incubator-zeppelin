@@ -52,9 +52,9 @@ body .navbar {
 }
 
 .navbar-inverse {
-  background: #3071a9;
+  background: #555;
   color: #fff;
-  border-color: #3071a9;
+  border-color: #555;
   font-size: 18px;
 }
 
@@ -62,12 +62,12 @@ body .navbar {
 .navbar-inverse .navbar-nav > .open > a:hover,
 .navbar-inverse .navbar-nav > .open > a:focus {
   color: #fff;
-  background: #3071a9;
+  background: #555;
 }
 
 .navbar-inverse .navbar-toggle:hover,
 .navbar-inverse .navbar-toggle:focus {
-  background: #3071a9;
+  background: #555;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover,
@@ -96,7 +96,7 @@ body .navbar {
   color: #fff;
   text-decoration: none;
   font-family: 'Patua One', cursive;
-  font-size: 32px;
+  font-size: 26px;
 }
 
 a.navbar-brand:hover {
@@ -145,7 +145,7 @@ a.navbar-brand:hover {
 #notebook-list li.active > a:focus {
   color: #fff;
   text-decoration: none;
-  background: #428bca;
+  background: #999;
   outline: 0;
 }
 
@@ -269,11 +269,11 @@ a.navbar-brand:hover {
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
-    background: #3071A9;
+    background: #555;
   }
 
   .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
-    border-color: #3071A9;
+    border-color: #555;
   }
 }
 
@@ -310,8 +310,8 @@ a.navbar-brand:hover {
 .nav-login-btn:hover,
 .nav-login-btn:focus {
   color: #fff;
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #999;
+  border-color: #777;
 }
 
 .username {
@@ -801,7 +801,7 @@ This part should be removed when new version of bootstrap handles this issue.
 }
 
 .bootstrap-dialog.type-primary .modal-header {
-  background: #3071a9;
+  background: #555;
 }
 
 .about{

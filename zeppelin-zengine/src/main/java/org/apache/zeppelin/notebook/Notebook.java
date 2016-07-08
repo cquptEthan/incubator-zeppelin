@@ -203,7 +203,6 @@ public class Notebook implements NoteEventListener {
       throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
-
     Gson gson = gsonBuilder.registerTypeAdapter(Date.class, new NotebookImportDeserializer())
       .create();
     JsonReader reader = new JsonReader(new StringReader(sourceJson));

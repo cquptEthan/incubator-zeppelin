@@ -59,6 +59,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   String text;
   String user;
   Date dateUpdated;
+  Integer rows;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
@@ -86,6 +87,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
+    rows = 0;
+  }
+  public Integer getRows() {
+    return rows;
+  }
+
+  public void setRows(Integer rows) {
+    this.rows = rows;
   }
 
   public Paragraph(Note note, JobListener listener, InterpreterFactory factory) {
@@ -201,6 +210,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   public Interpreter getRepl(String name) {
+    if (note == null ) {
+      System.out.println("note is null");
+    }
+    if (factory == null ) {
+      System.out.println("factory is null");
+    }
     return factory.getInterpreter(note.getId(), name);
   }
 
@@ -252,6 +267,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     logger().info("run paragraph {} using {} " + repl, getId(), replName);
+    if ( this.getConfig().get("OVERRIDE_MAX_RESULTS") != null ){
+      repl.getProperty().setProperty("zeppelin.sql.export", "true");
+    }
+
     if (repl == null) {
       logger().error("Can not find interpreter name " + repl);
       throw new RuntimeException("Can not find interpreter for " + getRequiredReplName());

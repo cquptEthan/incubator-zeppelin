@@ -466,11 +466,11 @@ angular.module('zeppelinWebApp')
           selectDefaultColsForGraphOption();
         }
         /** User changed the chart type? */
-        if (oldGraphMode !== newGraphMode) {
-          $scope.setGraphMode(newGraphMode, false, false);
-        } else {
-          $scope.setGraphMode(newGraphMode, false, true);
-        }
+        //if (oldGraphMode !== newGraphMode) {
+        $scope.setGraphMode(newGraphMode, false, false);
+        //} else {
+        //  $scope.setGraphMode(newGraphMode, false, true);
+        //}
       } else if (newType === 'HTML' && resultRefreshed) {
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
@@ -1494,7 +1494,8 @@ angular.module('zeppelinWebApp')
 
   $scope.isGraphMode = function(graphName) {
     var activeAppId = _.get($scope.paragraph.config, 'helium.activeApp');
-    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName && !activeAppId) {
+    if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
+    //if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName && !activeAppId) {
       return true;
     } else {
       return false;
@@ -2179,9 +2180,9 @@ angular.module('zeppelinWebApp')
   }
 
   $scope.goToSingleParagraph = function () {
-    var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
-    $window.open(redirectToUrl);
+    //var noteId = $route.current.pathParams.noteId;
+    //var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
+    //$window.open(redirectToUrl);
   };
 
   $scope.showScrollDownIcon = function(){
@@ -2212,6 +2213,12 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+    $scope.goToCSVExportParagraph = function () {
+      var noteId = $route.current.pathParams.noteId;
+      var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportCSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.csv';
+      $window.open(redirectToUrl);
+    };
+
   $scope.exportToDSV = function (delimiter) {
     var data = $scope.paragraph.result;
     var dsv = '';
@@ -2232,9 +2239,12 @@ angular.module('zeppelinWebApp')
       extension = 'tsv';
     } else if (delimiter === ',') {
       extension = 'csv';
+    } else if (delimiter === ' ') {
+      extension = 'txt';
     }
     SaveAsService.SaveAs(dsv, 'data', extension);
   };
+
 
   // Helium ---------------------------------------------
 

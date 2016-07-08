@@ -637,6 +637,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     Paragraph p = note.getParagraph(paragraphId);
+
     p.settings.setParams(params);
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));

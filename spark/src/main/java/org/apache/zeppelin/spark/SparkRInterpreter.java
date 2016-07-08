@@ -21,6 +21,11 @@ import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.HTable;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.thrift.InterpreterCompletion;
@@ -30,14 +35,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * R and SparkR interpreter with visualization support.
  */
 public class SparkRInterpreter extends Interpreter {
+  public static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
 
   private static String renderOptions;
@@ -91,6 +96,10 @@ public class SparkRInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String lines, InterpreterContext interpreterContext) {
 
+    String currentUser = interpreterContext.getAuthenticationInfo().getUser();
+//    context.get
+    this.insertROperator(currentUser, lines);
+//    ParseDriver.HiveLexerX
     String imageWidth = getProperty("zeppelin.R.image.width");
 
     String[] sl = lines.split("\n");
@@ -195,6 +204,32 @@ public class SparkRInterpreter extends Interpreter {
       return Boolean.parseBoolean(getProperty("zeppelin.R.knitr"));
     } catch (Exception e) {
       return false;
+    }
+  }
+
+  private void insertROperator(String user, String r) {
+    Configuration conf = HBaseConfiguration.create();
+    conf.set("hbase.zookeeper.quorum", getProperty("hbase.zookeeper.quorum"));
+    TableName tableName = TableName.valueOf(getProperty("zeppelin.R.cmd.tablename"));
+
+
+    try {
+      HTable hTable = new HTable(conf, tableName);
+      Long cur = System.currentTimeMillis();
+      String time = String.valueOf(cur);
+      String rowKey = time + user;
+
+      Put put = new Put(rowKey.getBytes());
+      put.addImmutable("common".getBytes(), "time".getBytes(),
+        SDF.format(new Date(cur)).getBytes());
+      put.addImmutable("common".getBytes(), "user".getBytes(), user.getBytes());
+      put.addImmutable("common".getBytes(), "r".getBytes(), r.getBytes());
+      hTable.put(put);
+      hTable.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+      logger.error(e.getMessage());
     }
   }
 
