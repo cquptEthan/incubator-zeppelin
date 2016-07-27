@@ -523,7 +523,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', [
-    'jscs',
+    //'jscs',
     'jshint:all',
     'htmlhint',
     'clean:dist',

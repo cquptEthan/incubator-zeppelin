@@ -96,32 +96,18 @@ public class SparkVersionTest {
     @Test
   public void sqlParseTest() throws org.apache.hadoop.hive.ql.parse.ParseException, IOException, SemanticException {
     ParseDriver parseDriver = new ParseDriver();
-    System.out.println(parseDriver.parse("" +
-      "select b.contract_no, b.user_id, FROM_UNIXTIME(b.apply_time,\"%Y-%m-%d\") as apply_time,\n" +
-      " (\n" +
-      "case a.belong_staff_no \n" +
-      "when 44 then \"设计事业一部\" \n" +
-      "when 156 then \"设计事业一部\" \n" +
-      "when 113 then \"开发业务事业部\" \n" +
-      "else NULL end\n" +
-      ") as department,\n" +
-      "(\n" +
-      "case b.order_state\n" +
-      "when 1 then \"未放款\"\n" +
-      "else \"已放款\" end\n" +
-      ") as loan_state,\n" +
-      "(\n" +
-      "sum(case c.bill_type\n" +
-      "when 1 then 0\n" +
-      "when 2 then c.pay_amount*loan_days*0.01/365 \n" +
-      "else NULL end \n" +
-      ")) as award_amount\n" +
-      "from  ods_jol_loan_order_belong a \n" +
-      "left join ods_jol_loan_order b on a.order_no=b.order_no\n" +
-      "left join ods_jol_loan_bill c on a.order_no=c.order_no\n" +
-      "where a.belong_staff_no>0 and \n" +
-      "((FROM_UNIXTIME(b.apply_time,\"%Y-%m-%d\") between '2016-06-01' and '2016-06-30'  and b.finnal_audit_state=2) OR (FROM_UNIXTIME(c.create_time,\"%Y-%m-%d\") between '2016-06-01' and '2016-06-30' AND bill_type =2)) \n" +
-      "group by (b.order_no)").dump());
+
+    System.out.println(parseDriver.parse("select  insured_premium as \"保费金额\"\n" +
+      "\t\t,insured_amount as \"保费额度\"\n" +
+      "\t\t,paid_amount  as \"赔付金额\"\n" +
+      "\t\t,count( distinct policy_no) as \"购买次数\"\n" +
+      "from ods_bx_policy\n" +
+      "where status in (3,4,5,6) \n" +
+      "and FROM_UNIXTIME(create_time,\"%Y-%m-%d\") = '2016-07-08' \n" +
+      "group by insured_premium \n" +
+      "\t\t,insured_amount \n" +
+      "\t\t,paid_amount"));
+
     System.out.println(parseDriver.parse("select 4 as id from dua\n" +
       " union all\n" +
       "select 3 as id from dua").getChildren());
