@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 
+
 body {
   background: white;
 }
@@ -58,3 +59,38 @@ svg {
 .btn-link {
   display: none;
 }
+
+ @media print {
+
+   body {
+     padding-top: 0px;
+   }
+
+   .navbar-fixed-top {
+      display: none !important;
+   }
+
+   .noteAction {
+      position: initial;
+   }
+
+   .noteAction .btn-group,
+   .noteAction .labelBtn,
+   .noteAction .pull-right {
+      display: none !important;
+   }
+
+   .control span[class^="icon-"] {
+      display: none;
+   }
+
+   .notebookContent {
+     padding-top: 0px;
+   }
+
+   .new-paragraph {
+      display: none;
+   }
+
+ }
+
