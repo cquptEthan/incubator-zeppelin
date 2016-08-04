@@ -27,7 +27,7 @@
   <version>0.7.0-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
-  <url>http://zeppelin.apache.org/</url>
+  <url>http://zeppelin.apache.org</url>
 
   <parent>
     <groupId>org.apache</groupId>
@@ -72,6 +72,7 @@
     <module>lens</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
+    <module>bigquery</module>
     <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
@@ -96,14 +97,14 @@
   </properties>
 
   <repositories>
-    <repository>
-      <id>ZBJ</id>
-      <url>http://nexus.axiomalaska.com/nexus/content/repositories/public</url>
-    </repository>
-    <repository>
-      <id>clojars</id>
-      <url>http://clojars.org/repo/</url>
-    </repository>
+    <!--<repository>-->
+      <!--<id>ZBJ</id>-->
+      <!--<url>http://nexus.axiomalaska.com/nexus/content/repositories/public</url>-->
+    <!--</repository>-->
+    <!--<repository>-->
+      <!--<id>clojars</id>-->
+      <!--<url>http://clojars.org/repo/</url>-->
+    <!--</repository>-->
   </repositories>
 
   <dependencyManagement>
@@ -243,6 +244,7 @@
           <formats>
             <format>html</format>
           </formats>
+            <check/>
         </configuration>
         <executions>
           <execution>
@@ -352,18 +354,17 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-remote-resources-plugin</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
         <executions>
           <execution>
+            <id>process-remote-resources</id>
             <goals>
               <goal>process</goal>
             </goals>
             <configuration>
               <resourceBundles>
-                <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
-                <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
+                <resourceBundle>org.apache:apache-jar-resource-bundle:1.0</resourceBundle>
               </resourceBundles>
             </configuration>
           </execution>
@@ -471,6 +472,7 @@
               <exclude>spark-*-bin*/**</exclude>
               <exclude>.spark-dist/**</exclude>
               <exclude>**/interpreter-setting.json</exclude>
+              <exclude>**/constants.json</exclude>
 
               <!-- bundled from bootstrap -->
               <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
