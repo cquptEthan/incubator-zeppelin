@@ -13,84 +13,36 @@
  */
 
 
-body {
-  background: white;
+@media print {
+
+    body {
+        padding-top: 0px;
+    }
+
+    .navbar-fixed-top {
+        display: none !important;
+    }
+
+    .noteAction {
+        position: initial;
+    }
+
+    .noteAction .btn-group,
+    .noteAction .labelBtn,
+    .noteAction .pull-right {
+        display: none !important;
+    }
+
+    .control span[class^="icon-"] {
+        display: none;
+    }
+
+    .notebookContent {
+        padding-top: 0px;
+    }
+
+    .new-paragraph {
+        display: none;
+    }
+
 }
-
-.labelBtn {
-  display: none;
-}
-
-.new_h3 {
-  margin-left: 220px;
-  top: 0;
-  position: fixed;
-}
-
-.noteAction {
-  border: 1px solid #555;
-  box-shadow: none;
-}
-
-.control {
-  display: none;
-}
-
-.editor {
-  display: none;
-}
-
-.form-horizontal {
-  display: none;
-}
-
-.btn-group {
-  display: none;
-}
-
-.box {
-  border: none;
-}
-
-svg {
-  margin-left: -20px;
-}
-
-.btn-link {
-  display: none;
-}
-
- @media print {
-
-   body {
-     padding-top: 0px;
-   }
-
-   .navbar-fixed-top {
-      display: none !important;
-   }
-
-   .noteAction {
-      position: initial;
-   }
-
-   .noteAction .btn-group,
-   .noteAction .labelBtn,
-   .noteAction .pull-right {
-      display: none !important;
-   }
-
-   .control span[class^="icon-"] {
-      display: none;
-   }
-
-   .notebookContent {
-     padding-top: 0px;
-   }
-
-   .new-paragraph {
-      display: none;
-   }
-
- }
-

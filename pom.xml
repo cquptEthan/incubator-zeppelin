@@ -101,10 +101,10 @@
       <!--<id>ZBJ</id>-->
       <!--<url>http://nexus.axiomalaska.com/nexus/content/repositories/public</url>-->
     <!--</repository>-->
-    <!--<repository>-->
-      <!--<id>clojars</id>-->
-      <!--<url>http://clojars.org/repo/</url>-->
-    <!--</repository>-->
+    <repository>
+      <id>clojars</id>
+      <url>http://clojars.org/repo/</url>
+    </repository>
   </repositories>
 
   <dependencyManagement>

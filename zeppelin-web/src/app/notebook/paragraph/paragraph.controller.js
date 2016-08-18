@@ -290,7 +290,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
-      var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
       var oldActiveApp = _.get($scope.paragraph.config, 'helium.activeApp');
       var newActiveApp = _.get(data.paragraph.config, 'helium.activeApp');
@@ -1987,7 +1986,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     };
 
   $scope.exportToDSV = function (delimiter) {
-    var data = $scope.paragraph.result;
     var dsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
       dsv += $scope.paragraph.result.columnNames[titleIndex].name + delimiter;
