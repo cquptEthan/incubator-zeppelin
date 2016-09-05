@@ -99,7 +99,6 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     if (newParagraph.focus) {
       $scope.paragraphFocused = true;
     }
-
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
     }
@@ -686,9 +685,10 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
+      $scope.editor.setReadOnly($scope.isRunning());
       if ($scope.paragraphFocused) {
         $scope.editor.focus();
-        $scope.goToLineEnd();
+        $scope.goToEnd();
       }
 
       autoAdjustEditorHeight(_editor.container.id);
@@ -950,7 +950,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     }
     var user = (pdata.user === undefined || pdata.user === null) ? 'anonymous' : pdata.user;
     var desc = 'Took ' + moment.duration((timeMs / 1000), 'seconds').format('h [hrs] m [min] s [sec]') +
-      '. Last updated by ' + user + ' at ' + moment(pdata.dateUpdated).format('MMMM DD YYYY, h:mm:ss A') + '.';
+      '. Last updated by ' + user + ' at ' + moment(pdata.dateFinished).format('MMMM DD YYYY, h:mm:ss A') + '.';
     if ($scope.isResultOutdated()) {
       desc += ' (outdated)';
     }
@@ -969,8 +969,8 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     return false;
   };
 
-  $scope.goToLineEnd = function() {
-    $scope.editor.navigateLineEnd();
+  $scope.goToEnd = function() {
+    $scope.editor.navigateFileEnd();
   };
 
   $scope.getResultType = function(paragraph) {
@@ -993,6 +993,21 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
     } else {
       return 'table';
     }
+  };
+
+  $scope.parseTableCell = function(cell) {
+    if (!isNaN(cell)) {
+      if (cell.length === 0 || Number(cell) > Number.MAX_SAFE_INTEGER || Number(cell) < Number.MIN_SAFE_INTEGER) {
+        return cell;
+      } else {
+        return Number(cell);
+      }
+    }
+    var d = moment(cell);
+    if (d.isValid()) {
+      return d;
+    }
+    return cell;
   };
 
   $scope.loadTableData = function(result) {
@@ -1028,8 +1043,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
           if (i === 0) {
             columnNames.push({name: col, index: j, aggr: 'sum'});
           } else {
-            cols.push(col);
-            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: col});
+            var parsedCol = $scope.parseTableCell(col);
+            cols.push(parsedCol);
+            cols2.push({key: (columnNames[i]) ? columnNames[i].name : undefined, value: parsedCol});
           }
         }
         if (i !== 0) {
@@ -1108,7 +1124,9 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         cells: function(row, col, prop) {
           var cellProperties = {};
           cellProperties.renderer = function(instance, td, row, col, prop, value, cellProperties) {
-            if (!isNaN(value)) {
+            if (value instanceof moment) {
+              td.innerHTML = value._i;
+            } else if (!isNaN(value)) {
               cellProperties.format = '0,0.[00000]';
               td.style.textAlign = 'left';
               Handsontable.renderers.NumericRenderer.apply(this, arguments);
@@ -1183,7 +1201,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       d3g = scatterData.d3g;
 
       $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-      $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
+      $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
@@ -1225,7 +1243,11 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
         $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
-        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
+        if (type === 'stackedAreaChart') {
+          $scope.chart[type].yAxisTickFormat(function(d) {return yAxisTickFormat(d);});
+        } else {
+          $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d, xLabels);});
+        }
         $scope.chart[type].yAxis.axisLabelDistance(50);
         if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
           $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
@@ -1962,7 +1984,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           colName = d3g[d3gIndex].key;
-          colName = colName.split('.')[0];
+          colName = colName.split('.').slice(0, -1).join('.');
           d3g[d3gIndex].key = colName;
         }
       }
@@ -2655,6 +2677,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.editor.setReadOnly($scope.isRunning());
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
@@ -2709,7 +2732,16 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
   });
 
   $scope.$on('appendParagraphOutput', function(event, data) {
-    if ($scope.paragraph.id === data.paragraphId) {
+    /* It has been observed that append events
+     * can be errorneously called even if paragraph
+     * execution has ended, and in that case, no append
+     * should be made. Also, it was observed that between PENDING
+     * and RUNNING states, append-events can be called and we can't
+     * miss those, else during the length of paragraph run, few
+     * initial output line/s will be missing.
+     */
+    if ($scope.paragraph.id === data.paragraphId &&
+       ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
       if ($scope.flushStreamingOutput) {
         $scope.clearTextOutput();
         $scope.flushStreamingOutput = false;
