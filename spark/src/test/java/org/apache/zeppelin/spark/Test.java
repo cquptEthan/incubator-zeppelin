@@ -12,11 +12,23 @@ import org.apache.hadoop.hive.ql.parse.ParseException;
 public class Test {
   @org.junit.Test
   public void s() {
-    String st = "select count(distinct a.user_id) from (select distinct user_id from ods_ad_new_record where create_date between  '2016-07-01' and '2016-07-31' union all select user_id from ods_mb_sellerlimitsV2_user where membership_type>0 and create_ymd between '2016-07-01' and '2016-07-31')a \n" +
-      "where a.user_id not in (select user_id from (SELECT t.user_id,SUM(case when dateymd<'2016-07-01'  then in_amount end) AS preshouru\n" +
-      "FROM ods_pa_platform_bill t\n" +
-      "WHERE stype_id IN (6,10,24,26) AND in_amount >0 AND t.user_id <>0\n" +
-      "GROUP BY t.user_id)tt where preshouru>0)";
+    String st = "select t1.uniqid, enter_url, jump_fir_domainname, jump_sec_domainname, jump_thi_domainname\n" +
+      "from\n" +
+      "(select uniqid, current_url as enter_url\n" +
+      "from fact_galog_behavior\n" +
+      "where current_domainname='task.zbj.com' and currentparam='/' and time='2016-09-06' and visit_num=1) t1\n" +
+      "left join\n" +
+      "(select uniqid, current_domainname as jump_fir_domainname\n" +
+      "from fact_galog_behavior\n" +
+      "where time='2016-09-06' and visit_num=2) t2 on t1.uniqid=t2.uniqid\n" +
+      "left join\n" +
+      "(select uniqid, current_domainname as jump_sec_domainname\n" +
+      "from fact_galog_behavior\n" +
+      "where time='2016-09-06' and visit_num=3) t3 on t1.uniqid=t3.uniqid\n" +
+      "left join\n" +
+      "(select uniqid, current_domainname as jump_thi_domainname\n" +
+      "from fact_galog_behavior\n" +
+      "where time='2016-09-06' and visit_num=4) t4 on t1.uniqid=t4.uniqid";
     ParseDriver parseDriver = new ParseDriver();
     ASTNode astNode = null;
     try {
