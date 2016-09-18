@@ -279,6 +279,84 @@ public class ZeppelinContext {
     return msg.toString();
   }
 
+
+  public static String showDF(SparkContext sc,
+                              InterpreterContext interpreterContext,
+                              Object df, int maxResult, boolean isBigQuery) {
+    Object[] rows = null;
+    Method take;
+    String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
+    sc.setJobGroup(jobGroup, "Zeppelin", false);
+
+    try {
+      take = df.getClass().getMethod("take", int.class);
+      rows = (Object[]) take.invoke(df, maxResult + 1);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+      | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
+      sc.clearJobGroup();
+      throw new InterpreterException(e);
+    }
+
+    List<Attribute> columns = null;
+    // get field names
+    try {
+      // Use reflection because of classname returned by queryExecution changes from
+      // Spark <1.5.2 org.apache.spark.sql.SQLContext$QueryExecution
+      // Spark 1.6.0> org.apache.spark.sql.hive.HiveContext$QueryExecution
+      Object qe = df.getClass().getMethod("queryExecution").invoke(df);
+      Object a = qe.getClass().getMethod("analyzed").invoke(qe);
+      scala.collection.Seq seq = (scala.collection.Seq) a.getClass().getMethod("output").invoke(a);
+
+      columns = (List<Attribute>) scala.collection.JavaConverters.seqAsJavaListConverter(seq)
+        .asJava();
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+      | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+    StringBuilder msg = new StringBuilder();
+//    msg.append("%table ");
+    for (Attribute col : columns) {
+      msg.append("\"" + col.name() + "\"" + ",");
+    }
+    msg.deleteCharAt(msg.length() - 1);
+    msg.append("\n");
+
+    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
+    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
+    // NullType, NumericType, ShortType, StringType, StructType
+
+    try {
+      for (int r = 0; r < maxResult && r < rows.length; r++) {
+        Object row = rows[r];
+        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
+        Method apply = row.getClass().getMethod("apply", int.class);
+
+        for (int i = 0; i < columns.size(); i++) {
+          if (!(Boolean) isNullAt.invoke(row, i)) {
+            msg.append("\"" + apply.invoke(row, i).toString() + "\"");
+          } else {
+            msg.append("\"" + "null" + "\"");
+          }
+          if (i != columns.size() - 1) {
+            msg.append(",");
+          }
+        }
+        msg.append("\n");
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+      | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+//    msg.append("\n TotalRows: " + rows.length);
+//    if (rows.length > maxResult) {
+//      msg.append("<br/><font color=red>Results are limited by " + maxResult + ".</font>");
+//    }
+    sc.clearJobGroup();
+    return msg.toString();
+  }
+
   /**
    * Run paragraph by id
    * @param id

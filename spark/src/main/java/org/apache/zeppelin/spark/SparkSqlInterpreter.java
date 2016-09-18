@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.Charsets;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -181,7 +182,7 @@ public class SparkSqlInterpreter extends Interpreter {
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
     int row = msg.split("\n").length;
     if (row >=  1000) {
-      String export = ZeppelinContext.showDF(sc, context, rdd, maxExport);
+      String export = ZeppelinContext.showDF(sc, context, rdd, maxExport, true);
       exportBigResult(context.getNoteId() + context.getParagraphId(), export, currentUser);
     }
     sc.clearJobGroup();
@@ -421,8 +422,12 @@ public class SparkSqlInterpreter extends Interpreter {
         new org.apache.hadoop.fs.Path("/home/hadoop/hadoop/conf/mapred-site.xml"));
       FileSystem fileSystem = FileSystem.get(hdfsconf);
       FSDataOutputStream out = fileSystem.create(new Path(path));
-      InputStream inputStream = new ByteArrayInputStream(msg.replaceAll("\t", ",")
-        .getBytes(Charsets.UTF_8.toString()));
+
+      //CSV
+//      InputStream inputStream = new ByteArrayInputStream(msg.replaceAll("\t", ",")
+//        .getBytes(Charsets.UTF_8.toString()));
+
+      InputStream inputStream = IOUtils.toInputStream(msg, Charsets.UTF_8.toString());
 
       byte[] buffer = new byte[8096 * 100];
       int c = 0;
@@ -430,6 +435,7 @@ public class SparkSqlInterpreter extends Interpreter {
         out.write(buffer, 0, c);
         out.flush();
       }
+      IOUtils.closeQuietly(inputStream);
       out.close();
       fileSystem.close();
     } catch (IOException e) {

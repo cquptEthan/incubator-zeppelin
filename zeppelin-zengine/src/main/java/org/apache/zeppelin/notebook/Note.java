@@ -512,33 +512,7 @@ public class Note implements Serializable, ParagraphJobListener {
 
     return true;
   }
-  /**
-   * Run a single paragraph and block for the results
-   *
-   * @param paragraphId
-   */
-  public void runSynchronously(String paragraphId) {
-    Paragraph p = getParagraph(paragraphId);
-    p.setInterpreterFactory(factory);
-    p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    String requiredReplName = p.getRequiredReplName();
-    Interpreter intp = factory.getInterpreter(getId(), requiredReplName);
 
-    if (intp == null) {
-      // TODO(jongyoul): Make "%jdbc" configurable from JdbcInterpreter
-      if (conf.getUseJdbcAlias() && null != (intp = factory.getInterpreter(getId(), "jdbc"))) {
-        String pText = p.getText().replaceFirst(requiredReplName, "jdbc(" + requiredReplName + ")");
-        logger.debug("New paragraph: {}", pText);
-        p.setEffectiveText(pText);
-      } else {
-        throw new InterpreterException("Interpreter " + requiredReplName + " not found");
-      }
-    }
-    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
-      intp.getScheduler().submit(p);
-    }
-    p.getConfig().remove("OVERRIDE_MAX_RESULTS");
-  }
 
   public List<InterpreterCompletion> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);

@@ -18,8 +18,8 @@ package org.apache.zeppelin.server;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.alias.CredentialProvider;
-import org.apache.hadoop.security.alias.CredentialProviderFactory;
+//import org.apache.hadoop.security.alias.CredentialProvider;
+//import org.apache.hadoop.security.alias.CredentialProviderFactory;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
@@ -116,15 +116,15 @@ public class ActiveDirectoryGroupRealm extends AbstractLdapRealm {
     } else {
       try {
         Configuration configuration = new Configuration();
-        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
-          this.hadoopSecurityCredentialPath);
-        CredentialProvider provider =
-          CredentialProviderFactory.getProviders(configuration).get(0);
-        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
-            KEYSTORE_PASS);
-        if (credEntry != null) {
-          password = new String(credEntry.getCredential());
-        }
+//        configuration.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH,
+//          this.hadoopSecurityCredentialPath);
+//        CredentialProvider provider =
+//          CredentialProviderFactory.getProviders(configuration).get(0);
+//        CredentialProvider.CredentialEntry credEntry = provider.getCredentialEntry(
+//            KEYSTORE_PASS);
+//        if (credEntry != null) {
+//          password = new String(credEntry.getCredential());
+//        }
       } catch (Exception e) {
 
       }

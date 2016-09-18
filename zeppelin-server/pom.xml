@@ -35,7 +35,7 @@
   <properties>
     <cxf.version>2.7.7</cxf.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
-    <hadoop-common.version>2.6.0</hadoop-common.version>
+    <hadoop-common.version>2.2.0</hadoop-common.version>
   </properties>
 
   <dependencyManagement>
@@ -290,18 +290,18 @@
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop-common.version}</version>
       <exclusions>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-json</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.sun.jersey</groupId>
-          <artifactId>jersey-server</artifactId>
-        </exclusion>
+        <!--<exclusion>-->
+          <!--<groupId>com.sun.jersey</groupId>-->
+          <!--<artifactId>jersey-core</artifactId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+          <!--<groupId>com.sun.jersey</groupId>-->
+          <!--<artifactId>jersey-json</artifactId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+          <!--<groupId>com.sun.jersey</groupId>-->
+          <!--<artifactId>jersey-server</artifactId>-->
+        <!--</exclusion>-->
 
 
         <exclusion>
